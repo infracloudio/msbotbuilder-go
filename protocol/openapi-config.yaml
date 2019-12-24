@@ -1,3 +1,4 @@
 {
-  "modelPackage": "botbuilder"
+  "packageName": "botbuilder",
+  "sourceFolder": "pkg"
 }
