@@ -1,0 +1,3 @@
+codegen:
+	@build/codegen.sh
+
