@@ -1,0 +1,38 @@
+﻿# BotFramework Connector
+
+> see https://aka.ms/autorest
+
+Configuration for generating BotFramework Connector SDK.
+
+``` yaml
+add-credentials: true
+openapi-type: data-plane
+```
+The current release for the BotFramework Connector is v3.0.
+
+# Releases
+
+## Connector API 3.0
+
+``` yaml $(go)
+input-file:
+  - ConnectorAPI.json
+```
+
+### Connector API 3.0 - Python Settings
+
+These settings apply only when `--go` is specified on the command line.
+DO NOT use `--basic-setup-py` as this will overwrite the existing setup.py files.
+If you upgrade autorest from npm you may need to run `autorest ---reset` before continuing.
+
+``` yaml $(go)
+go:
+  license-header: MICROSOFT_MIT_NO_VERSION
+  add-credentials: true
+  payload-flattening-threshold: 2
+  namespace: botframework.tokenApi
+  package-name: botframework-Token
+  override-client-name: TokenApiClient
+  clear-output-folder: true
+  output-folder: ./generated
+```
