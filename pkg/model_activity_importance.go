@@ -9,12 +9,13 @@
  */
 
 package botbuilder
+
 // ActivityImportance : Defines the importance of an Activity
 type ActivityImportance string
 
 // List of ActivityImportance
 const (
-	LOW ActivityImportance = "low"
-	NORMAL ActivityImportance = "normal"
-	HIGH ActivityImportance = "high"
+	ActivityLow    ActivityImportance = "low"
+	ActivityNormal ActivityImportance = "normal"
+	ActivityHigh   ActivityImportance = "high"
 )

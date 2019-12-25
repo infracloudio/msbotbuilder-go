@@ -9,12 +9,13 @@
  */
 
 package botbuilder
+
 // TextFormatTypes : Text format types
 type TextFormatTypes string
 
 // List of TextFormatTypes
 const (
 	MARKDOWN TextFormatTypes = "markdown"
-	PLAIN TextFormatTypes = "plain"
-	XML TextFormatTypes = "xml"
+	PLAIN    TextFormatTypes = "plain"
+	XML      TextFormatTypes = "xml"
 )

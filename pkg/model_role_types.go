@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // RoleTypes : Role of the entity behind the account (Example: User, Bot, etc.)
 type RoleTypes string
 
 // List of RoleTypes
 const (
 	USER RoleTypes = "user"
-	BOT RoleTypes = "bot"
+	BOT  RoleTypes = "bot"
 )

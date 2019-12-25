@@ -12,7 +12,6 @@ package botbuilder
 
 // SemanticAction - Represents a reference to a programmatic action
 type SemanticAction struct {
-
 	State SemanticActionStates `json:"state,omitempty"`
 
 	// ID of this action

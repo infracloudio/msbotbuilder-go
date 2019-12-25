@@ -15,7 +15,7 @@ import (
 )
 
 // AttachmentsApiService is a service that implents the logic for the AttachmentsApiServicer
-// This service should implement the business logic for every endpoint for the AttachmentsApi API. 
+// This service should implement the business logic for every endpoint for the AttachmentsApi API.
 // Include any external packages or services that will be required by this service.
 type AttachmentsApiService struct {
 }

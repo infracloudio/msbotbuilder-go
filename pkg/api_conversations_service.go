@@ -15,7 +15,7 @@ import (
 )
 
 // ConversationsApiService is a service that implents the logic for the ConversationsApiServicer
-// This service should implement the business logic for every endpoint for the ConversationsApi API. 
+// This service should implement the business logic for every endpoint for the ConversationsApi API.
 // Include any external packages or services that will be required by this service.
 type ConversationsApiService struct {
 }

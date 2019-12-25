@@ -16,7 +16,6 @@ import (
 
 // Activity - An Activity is the basic communication type for the Bot Framework 3.0 protocol.
 type Activity struct {
-
 	Type ActivityTypes `json:"type,omitempty"`
 
 	// Contains an ID that uniquely identifies the activity on the channel.

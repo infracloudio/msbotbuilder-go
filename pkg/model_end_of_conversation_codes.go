@@ -9,15 +9,16 @@
  */
 
 package botbuilder
+
 // EndOfConversationCodes : Codes indicating why a conversation has ended
 type EndOfConversationCodes string
 
 // List of EndOfConversationCodes
 const (
-	UNKNOWN EndOfConversationCodes = "unknown"
-	COMPLETED_SUCCESSFULLY EndOfConversationCodes = "completedSuccessfully"
-	USER_CANCELLED EndOfConversationCodes = "userCancelled"
-	BOT_TIMED_OUT EndOfConversationCodes = "botTimedOut"
+	UNKNOWN                    EndOfConversationCodes = "unknown"
+	COMPLETED_SUCCESSFULLY     EndOfConversationCodes = "completedSuccessfully"
+	USER_CANCELLED             EndOfConversationCodes = "userCancelled"
+	BOT_TIMED_OUT              EndOfConversationCodes = "botTimedOut"
 	BOT_ISSUED_INVALID_MESSAGE EndOfConversationCodes = "botIssuedInvalidMessage"
-	CHANNEL_FAILED EndOfConversationCodes = "channelFailed"
+	CHANNEL_FAILED             EndOfConversationCodes = "channelFailed"
 )

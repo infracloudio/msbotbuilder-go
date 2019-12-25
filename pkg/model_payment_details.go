@@ -12,7 +12,6 @@ package botbuilder
 
 // PaymentDetails - Provides information about the requested transaction
 type PaymentDetails struct {
-
 	Total PaymentItem `json:"total,omitempty"`
 
 	// Contains line items for the payment request that the user agent may display

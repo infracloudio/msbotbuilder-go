@@ -14,7 +14,7 @@ import (
 	"log"
 	"net/http"
 
-	botbuilder "github.com/GIT_USER_ID/GIT_REPO_ID/pkg"
+	botbuilder "github.com/infracloudio/msbotbuilder-go/pkg"
 )
 
 func main() {

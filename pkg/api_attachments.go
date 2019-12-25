@@ -11,7 +11,6 @@
 package botbuilder
 
 import (
-	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -25,12 +24,12 @@ type AttachmentsApiController struct {
 
 // NewAttachmentsApiController creates a default api controller
 func NewAttachmentsApiController(s AttachmentsApiServicer) Router {
-	return &AttachmentsApiController{ service: s }
+	return &AttachmentsApiController{service: s}
 }
 
 // Routes returns all of the api route for the AttachmentsApiController
 func (c *AttachmentsApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"AttachmentsGetAttachment",
 			strings.ToUpper("Get"),
@@ -47,7 +46,7 @@ func (c *AttachmentsApiController) Routes() Routes {
 }
 
 // AttachmentsGetAttachment - GetAttachment
-func (c *AttachmentsApiController) AttachmentsGetAttachment(w http.ResponseWriter, r *http.Request) { 
+func (c *AttachmentsApiController) AttachmentsGetAttachment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	attachmentId := params["attachmentId"]
 	viewId := params["viewId"]
@@ -56,12 +55,12 @@ func (c *AttachmentsApiController) AttachmentsGetAttachment(w http.ResponseWrite
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // AttachmentsGetAttachmentInfo - GetAttachmentInfo
-func (c *AttachmentsApiController) AttachmentsGetAttachmentInfo(w http.ResponseWriter, r *http.Request) { 
+func (c *AttachmentsApiController) AttachmentsGetAttachmentInfo(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	attachmentId := params["attachmentId"]
 	result, err := c.service.AttachmentsGetAttachmentInfo(attachmentId)
@@ -69,6 +68,6 @@ func (c *AttachmentsApiController) AttachmentsGetAttachmentInfo(w http.ResponseW
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }

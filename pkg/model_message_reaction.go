@@ -12,6 +12,5 @@ package botbuilder
 
 // MessageReaction - Message reaction object
 type MessageReaction struct {
-
 	Type MessageReactionTypes `json:"type,omitempty"`
 }

@@ -12,6 +12,5 @@ package botbuilder
 
 // PaymentRequestUpdateResult - A result object from a Payment Request Update invoke operation
 type PaymentRequestUpdateResult struct {
-
 	Details PaymentDetails `json:"details,omitempty"`
 }

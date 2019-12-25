@@ -9,20 +9,21 @@
  */
 
 package botbuilder
+
 // ActionTypes : Defines action types for clickable buttons.
 type ActionTypes string
 
 // List of ActionTypes
 const (
-	OPEN_URL ActionTypes = "openUrl"
-	IM_BACK ActionTypes = "imBack"
-	POST_BACK ActionTypes = "postBack"
-	PLAY_AUDIO ActionTypes = "playAudio"
-	PLAY_VIDEO ActionTypes = "playVideo"
-	SHOW_IMAGE ActionTypes = "showImage"
+	OPEN_URL      ActionTypes = "openUrl"
+	IM_BACK       ActionTypes = "imBack"
+	POST_BACK     ActionTypes = "postBack"
+	PLAY_AUDIO    ActionTypes = "playAudio"
+	PLAY_VIDEO    ActionTypes = "playVideo"
+	SHOW_IMAGE    ActionTypes = "showImage"
 	DOWNLOAD_FILE ActionTypes = "downloadFile"
-	SIGNIN ActionTypes = "signin"
-	CALL ActionTypes = "call"
-	PAYMENT ActionTypes = "payment"
-	MESSAGE_BACK ActionTypes = "messageBack"
+	SIGNIN        ActionTypes = "signin"
+	CALL          ActionTypes = "call"
+	PAYMENT       ActionTypes = "payment"
+	MESSAGE_BACK  ActionTypes = "messageBack"
 )

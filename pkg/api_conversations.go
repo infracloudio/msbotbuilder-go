@@ -13,6 +13,7 @@ package botbuilder
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -25,12 +26,12 @@ type ConversationsApiController struct {
 
 // NewConversationsApiController creates a default api controller
 func NewConversationsApiController(s ConversationsApiServicer) Router {
-	return &ConversationsApiController{ service: s }
+	return &ConversationsApiController{service: s}
 }
 
 // Routes returns all of the api route for the ConversationsApiController
 func (c *ConversationsApiController) Routes() Routes {
-	return Routes{ 
+	return Routes{
 		{
 			"ConversationsCreateConversation",
 			strings.ToUpper("Post"),
@@ -107,24 +108,24 @@ func (c *ConversationsApiController) Routes() Routes {
 }
 
 // ConversationsCreateConversation - CreateConversation
-func (c *ConversationsApiController) ConversationsCreateConversation(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsCreateConversation(w http.ResponseWriter, r *http.Request) {
 	parameters := &ConversationParameters{}
 	if err := json.NewDecoder(r.Body).Decode(&parameters); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsCreateConversation(*parameters)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsDeleteActivity - DeleteActivity
-func (c *ConversationsApiController) ConversationsDeleteActivity(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsDeleteActivity(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	activityId := params["activityId"]
@@ -133,12 +134,12 @@ func (c *ConversationsApiController) ConversationsDeleteActivity(w http.Response
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsDeleteConversationMember - DeleteConversationMember
-func (c *ConversationsApiController) ConversationsDeleteConversationMember(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsDeleteConversationMember(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	memberId := params["memberId"]
@@ -147,12 +148,12 @@ func (c *ConversationsApiController) ConversationsDeleteConversationMember(w htt
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsGetActivityMembers - GetActivityMembers
-func (c *ConversationsApiController) ConversationsGetActivityMembers(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsGetActivityMembers(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	activityId := params["activityId"]
@@ -161,12 +162,12 @@ func (c *ConversationsApiController) ConversationsGetActivityMembers(w http.Resp
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsGetConversationMembers - GetConversationMembers
-func (c *ConversationsApiController) ConversationsGetConversationMembers(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsGetConversationMembers(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	result, err := c.service.ConversationsGetConversationMembers(conversationId)
@@ -174,28 +175,33 @@ func (c *ConversationsApiController) ConversationsGetConversationMembers(w http.
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsGetConversationPagedMembers - GetConversationPagedMembers
-func (c *ConversationsApiController) ConversationsGetConversationPagedMembers(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsGetConversationPagedMembers(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	query := r.URL.Query()
 	conversationId := params["conversationId"]
 	pageSize := query.Get("pageSize")
-	continuationToken := query.Get("continuationToken")
-	result, err := c.service.ConversationsGetConversationPagedMembers(conversationId, pageSize, continuationToken)
+	ps, err := strconv.ParseInt(pageSize, 10, 32)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+	continuationToken := query.Get("continuationToken")
+	result, err := c.service.ConversationsGetConversationPagedMembers(conversationId, int32(ps), continuationToken)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsGetConversations - GetConversations
-func (c *ConversationsApiController) ConversationsGetConversations(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsGetConversations(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	continuationToken := query.Get("continuationToken")
 	result, err := c.service.ConversationsGetConversations(continuationToken)
@@ -203,12 +209,12 @@ func (c *ConversationsApiController) ConversationsGetConversations(w http.Respon
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsReplyToActivity - ReplyToActivity
-func (c *ConversationsApiController) ConversationsReplyToActivity(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsReplyToActivity(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	activityId := params["activityId"]
@@ -217,18 +223,18 @@ func (c *ConversationsApiController) ConversationsReplyToActivity(w http.Respons
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsReplyToActivity(conversationId, activityId, *activity)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsSendConversationHistory - SendConversationHistory
-func (c *ConversationsApiController) ConversationsSendConversationHistory(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsSendConversationHistory(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	history := &Transcript{}
@@ -236,18 +242,18 @@ func (c *ConversationsApiController) ConversationsSendConversationHistory(w http
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsSendConversationHistory(conversationId, *history)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsSendToConversation - SendToConversation
-func (c *ConversationsApiController) ConversationsSendToConversation(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsSendToConversation(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	activity := &Activity{}
@@ -255,18 +261,18 @@ func (c *ConversationsApiController) ConversationsSendToConversation(w http.Resp
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsSendToConversation(conversationId, *activity)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsUpdateActivity - UpdateActivity
-func (c *ConversationsApiController) ConversationsUpdateActivity(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsUpdateActivity(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	activityId := params["activityId"]
@@ -275,18 +281,18 @@ func (c *ConversationsApiController) ConversationsUpdateActivity(w http.Response
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsUpdateActivity(conversationId, activityId, *activity)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }
 
 // ConversationsUploadAttachment - UploadAttachment
-func (c *ConversationsApiController) ConversationsUploadAttachment(w http.ResponseWriter, r *http.Request) { 
+func (c *ConversationsApiController) ConversationsUploadAttachment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	conversationId := params["conversationId"]
 	attachmentUpload := &AttachmentData{}
@@ -294,12 +300,12 @@ func (c *ConversationsApiController) ConversationsUploadAttachment(w http.Respon
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	result, err := c.service.ConversationsUploadAttachment(conversationId, *attachmentUpload)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	
+
 	EncodeJSONResponse(result, nil, w)
 }

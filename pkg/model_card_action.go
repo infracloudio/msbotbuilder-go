@@ -12,7 +12,6 @@ package botbuilder
 
 // CardAction - A clickable action
 type CardAction struct {
-
 	Type ActionTypes `json:"type,omitempty"`
 
 	// Text description which appears on the button

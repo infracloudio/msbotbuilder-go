@@ -12,7 +12,6 @@ package botbuilder
 
 // Mention - Mention information (entity type: \"mention\")
 type Mention struct {
-
 	Mentioned ChannelAccount `json:"mentioned,omitempty"`
 
 	// Sub Text which represents the mention (can be null or empty)

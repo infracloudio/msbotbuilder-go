@@ -9,24 +9,25 @@
  */
 
 package botbuilder
+
 // ActivityTypes : Types of Activities
 type ActivityTypes string
 
 // List of ActivityTypes
 const (
-	MESSAGE ActivityTypes = "message"
+	MESSAGE                 ActivityTypes = "message"
 	CONTACT_RELATION_UPDATE ActivityTypes = "contactRelationUpdate"
-	CONVERSATION_UPDATE ActivityTypes = "conversationUpdate"
-	TYPING ActivityTypes = "typing"
-	END_OF_CONVERSATION ActivityTypes = "endOfConversation"
-	EVENT ActivityTypes = "event"
-	INVOKE ActivityTypes = "invoke"
-	DELETE_USER_DATA ActivityTypes = "deleteUserData"
-	MESSAGE_UPDATE ActivityTypes = "messageUpdate"
-	MESSAGE_DELETE ActivityTypes = "messageDelete"
-	INSTALLATION_UPDATE ActivityTypes = "installationUpdate"
-	MESSAGE_REACTION ActivityTypes = "messageReaction"
-	SUGGESTION ActivityTypes = "suggestion"
-	TRACE ActivityTypes = "trace"
-	HANDOFF ActivityTypes = "handoff"
+	CONVERSATION_UPDATE     ActivityTypes = "conversationUpdate"
+	TYPING                  ActivityTypes = "typing"
+	END_OF_CONVERSATION     ActivityTypes = "endOfConversation"
+	EVENT                   ActivityTypes = "event"
+	INVOKE                  ActivityTypes = "invoke"
+	DELETE_USER_DATA        ActivityTypes = "deleteUserData"
+	MESSAGE_UPDATE          ActivityTypes = "messageUpdate"
+	MESSAGE_DELETE          ActivityTypes = "messageDelete"
+	INSTALLATION_UPDATE     ActivityTypes = "installationUpdate"
+	MESSAGE_REACTION        ActivityTypes = "messageReaction"
+	SUGGESTION              ActivityTypes = "suggestion"
+	TRACE                   ActivityTypes = "trace"
+	HANDOFF                 ActivityTypes = "handoff"
 )

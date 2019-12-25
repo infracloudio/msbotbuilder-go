@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // DeliveryModes : Values for deliveryMode field
 type DeliveryModes string
 
 // List of DeliveryModes
 const (
-	NORMAL DeliveryModes = "normal"
-	NOTIFICATION DeliveryModes = "notification"
+	DeliveryNormal       DeliveryModes = "normal"
+	DeliveryNotification DeliveryModes = "notification"
 )

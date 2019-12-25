@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // MessageReactionTypes : Message reaction types
 type MessageReactionTypes string
 
 // List of MessageReactionTypes
 const (
-	LIKE MessageReactionTypes = "like"
+	LIKE     MessageReactionTypes = "like"
 	PLUS_ONE MessageReactionTypes = "plusOne"
 )

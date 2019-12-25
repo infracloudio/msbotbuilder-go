@@ -12,6 +12,5 @@ package botbuilder
 
 // ErrorResponse - An HTTP API response
 type ErrorResponse struct {
-
 	Error Error `json:"error,omitempty"`
 }

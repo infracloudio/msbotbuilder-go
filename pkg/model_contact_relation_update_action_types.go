@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // ContactRelationUpdateActionTypes : Action types valid for ContactRelationUpdate activities
 type ContactRelationUpdateActionTypes string
 
 // List of ContactRelationUpdateActionTypes
 const (
-	ADD ContactRelationUpdateActionTypes = "add"
-	REMOVE ContactRelationUpdateActionTypes = "remove"
+	ContactActionAdd    ContactRelationUpdateActionTypes = "add"
+	ContactActionRemove ContactRelationUpdateActionTypes = "remove"
 )

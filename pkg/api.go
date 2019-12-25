@@ -14,18 +14,18 @@ import (
 	"net/http"
 )
 
-
 // AttachmentsApiRouter defines the required methods for binding the api requests to a responses for the AttachmentsApi
-// The AttachmentsApiRouter implementation should parse necessary information from the http request, 
+// The AttachmentsApiRouter implementation should parse necessary information from the http request,
 // pass the data to a AttachmentsApiServicer to perform the required actions, then write the service results to the http response.
-type AttachmentsApiRouter interface { 
+type AttachmentsApiRouter interface {
 	AttachmentsGetAttachment(http.ResponseWriter, *http.Request)
 	AttachmentsGetAttachmentInfo(http.ResponseWriter, *http.Request)
 }
+
 // ConversationsApiRouter defines the required methods for binding the api requests to a responses for the ConversationsApi
-// The ConversationsApiRouter implementation should parse necessary information from the http request, 
+// The ConversationsApiRouter implementation should parse necessary information from the http request,
 // pass the data to a ConversationsApiServicer to perform the required actions, then write the service results to the http response.
-type ConversationsApiRouter interface { 
+type ConversationsApiRouter interface {
 	ConversationsCreateConversation(http.ResponseWriter, *http.Request)
 	ConversationsDeleteActivity(http.ResponseWriter, *http.Request)
 	ConversationsDeleteConversationMember(http.ResponseWriter, *http.Request)
@@ -40,22 +40,20 @@ type ConversationsApiRouter interface {
 	ConversationsUploadAttachment(http.ResponseWriter, *http.Request)
 }
 
-
 // AttachmentsApiServicer defines the api actions for the AttachmentsApi service
-// This interface intended to stay up to date with the openapi yaml used to generate it, 
-// while the service implementation can ignored with the .openapi-generator-ignore file 
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
-type AttachmentsApiServicer interface { 
+type AttachmentsApiServicer interface {
 	AttachmentsGetAttachment(string, string) (interface{}, error)
 	AttachmentsGetAttachmentInfo(string) (interface{}, error)
 }
 
-
 // ConversationsApiServicer defines the api actions for the ConversationsApi service
-// This interface intended to stay up to date with the openapi yaml used to generate it, 
-// while the service implementation can ignored with the .openapi-generator-ignore file 
+// This interface intended to stay up to date with the openapi yaml used to generate it,
+// while the service implementation can ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
-type ConversationsApiServicer interface { 
+type ConversationsApiServicer interface {
 	ConversationsCreateConversation(ConversationParameters) (interface{}, error)
 	ConversationsDeleteActivity(string, string) (interface{}, error)
 	ConversationsDeleteConversationMember(string, string) (interface{}, error)

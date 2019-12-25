@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // AttachmentLayoutTypes : Attachment layout types
 type AttachmentLayoutTypes string
 
 // List of AttachmentLayoutTypes
 const (
-	LIST AttachmentLayoutTypes = "list"
+	LIST     AttachmentLayoutTypes = "list"
 	CAROUSEL AttachmentLayoutTypes = "carousel"
 )

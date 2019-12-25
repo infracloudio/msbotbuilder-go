@@ -9,12 +9,13 @@
  */
 
 package botbuilder
+
 // SemanticActionStates : Indicates whether the semantic action is starting, continuing, or done
 type SemanticActionStates string
 
 // List of SemanticActionStates
 const (
-	START SemanticActionStates = "start"
+	START    SemanticActionStates = "start"
 	CONTINUE SemanticActionStates = "continue"
-	DONE SemanticActionStates = "done"
+	DONE     SemanticActionStates = "done"
 )

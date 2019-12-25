@@ -9,12 +9,13 @@
  */
 
 package botbuilder
+
 // InputHints : Indicates whether the bot is accepting, expecting, or ignoring input
 type InputHints string
 
 // List of InputHints
 const (
 	ACCEPTING_INPUT InputHints = "acceptingInput"
-	IGNORING_INPUT InputHints = "ignoringInput"
+	IGNORING_INPUT  InputHints = "ignoringInput"
 	EXPECTING_INPUT InputHints = "expectingInput"
 )

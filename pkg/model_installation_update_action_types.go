@@ -9,11 +9,12 @@
  */
 
 package botbuilder
+
 // InstallationUpdateActionTypes : Action types valid for InstallationUpdate activities
 type InstallationUpdateActionTypes string
 
 // List of InstallationUpdateActionTypes
 const (
-	ADD InstallationUpdateActionTypes = "add"
-	REMOVE InstallationUpdateActionTypes = "remove"
+	InstallActionAdd    InstallationUpdateActionTypes = "add"
+	InstallActionRemove InstallationUpdateActionTypes = "remove"
 )
