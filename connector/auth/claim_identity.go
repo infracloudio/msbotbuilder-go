@@ -3,6 +3,7 @@ package auth
 type Claim interface{}
 type ClaimsIdentity interface {
 	GetClaimValue(string) string
+	IsAuthenticated() bool
 }
 
 type DefaultClaim struct {
@@ -18,17 +19,18 @@ func NewClaim(tpe, val string) Claim {
 }
 
 type DefaultClaimIdentity struct {
-	Claims          map[string]string
-	IsAuthenticated bool
+	claims          map[string]string
+	isAuthenticated bool
 }
 
 func NewClaimIdentity(claims map[string]string, isAuth bool) ClaimsIdentity {
-	return &DefaultClaimIdentity{
-		Claims:          claims,
-		IsAuthenticated: isAuth,
-	}
+	return &DefaultClaimIdentity{claims, isAuth}
 }
 
 func (ci DefaultClaimIdentity) GetClaimValue(cType string) string {
-	return ci.Claims[cType]
+	return ci.claims[cType]
+}
+
+func (ci DefaultClaimIdentity) IsAuthenticated() bool {
+	return ci.isAuthenticated
 }
