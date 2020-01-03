@@ -43,5 +43,9 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 }
 
 func (bf *BotFrameworkAdapter) AuthenticateRequest(ctx context.Context, req schema.Activity, headers string) error {
-	return nil
+	jwtValidation := &auth.JwtTokenValidation{}
+
+	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.Setting.CredentialProvider, bf.Setting.ChannelService)
+
+	return err
 }
