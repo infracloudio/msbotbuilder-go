@@ -13,7 +13,6 @@ import (
 )
 
 var metadataURL = "https://login.botframework.com/v1/.well-known/openidconfiguration"
-var jwksURL = *new(string)
 
 type TokenValidator interface {
 	ValidateToken(authHeader string, credentials CredentialProvider, channelService string, channelID string) ClaimsIdentity
@@ -47,13 +46,15 @@ func (jv JwtTokenValidation) AuthenticateRequest(ctx context.Context, activity s
 		return nil, errors.New("Unauthorized, service_url claim is invalid")
 	}
 
-	err = jv.validateIdentity(identity, credentials)
 	return identity, nil
 }
 
 func (jv JwtTokenValidation) getIdentity(authHeader string) (ClaimsIdentity, error) {
 
-	jwksURL, _ = jv.getJwkURL(metadataURL)
+	jwksURL, err := jv.getJwkURL(metadataURL)
+	if err != nil {
+		return nil, err
+	}
 
 	getKey := func(token *jwt.Token) (interface{}, error) {
 
@@ -74,18 +75,29 @@ func (jv JwtTokenValidation) getIdentity(authHeader string) (ClaimsIdentity, err
 		return nil, errors.New("Could not find public key")
 	}
 
+	// TODO: Add options verify_aud and verify_exp
 	token, err := jwt.Parse(strings.Split(authHeader, " ")[1], getKey)
 	if err != nil {
 		return nil, err
 	}
 
-	claims := token.Claims.(jwt.MapClaims)
+	// Check allowed signing algorithms
+	alg := token.Header["alg"]
+	isAllowed := func() bool {
+		for _, allowed := range ALLOWED_SIGNING_ALGORITHMS {
+			if allowed == alg {
+				return true
+			}
+		}
+		return false
+	}()
 
-	parsedClaims := make(map[string]string)
-	for key, value := range claims {
-		parsedClaims[key] = value.(string)
+	if !isAllowed {
+		return nil, errors.New("Unauthorized. Invalid signing algorithm")
 	}
-	return NewClaimIdentity(parsedClaims, true), nil
+
+	claims := token.Claims.(jwt.MapClaims)
+	return NewClaimIdentity(claims, true), nil
 }
 
 func (jv JwtTokenValidation) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
@@ -99,21 +111,11 @@ func (jv JwtTokenValidation) validateIdentity(identity ClaimsIdentity, credentia
 		return errors.New("Unauthorized. Invalid AppId passed on token")
 	}
 
-	// Check allowed signing algorithms
-	alg := identity.GetClaimValue("alg")
-	isAllowed := func() bool {
-		for _, allowed := range ALLOWED_SIGNING_ALGORITHMS {
-			if allowed == alg {
-				return true
-			}
-		}
-		return false
-	}()
-
-	if !isAllowed {
-		return errors.New("Unauthorized. Invalid signing algorithm")
-	}
 	return nil
+}
+
+type metadata struct {
+	JwksURI string `json:"jwks_uri"`
 }
 
 func (jv JwtTokenValidation) getJwkURL(metadataURL string) (string, error) {
@@ -122,10 +124,9 @@ func (jv JwtTokenValidation) getJwkURL(metadataURL string) (string, error) {
 		return "", errors.New("Error getting metadata document")
 	}
 
-	var data map[string]string
-	err = json.NewDecoder(response.Body).Decode(data)
-
-	return data["jwks_uri"], nil
+	data := metadata{}
+	err = json.NewDecoder(response.Body).Decode(&data)
+	return data.JwksURI, err
 }
 
 func (jv JwtTokenValidation) ValidateAuthHeader(ctx context.Context, authHeader string, channelService, channelID, serviceURL string) (ClaimsIdentity, error) {
