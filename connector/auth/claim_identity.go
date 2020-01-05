@@ -19,16 +19,16 @@ func NewClaim(tpe, val string) Claim {
 }
 
 type DefaultClaimIdentity struct {
-	claims          map[string]string
+	claims          map[string]interface{}
 	isAuthenticated bool
 }
 
-func NewClaimIdentity(claims map[string]string, isAuth bool) ClaimsIdentity {
+func NewClaimIdentity(claims map[string]interface{}, isAuth bool) ClaimsIdentity {
 	return &DefaultClaimIdentity{claims, isAuth}
 }
 
 func (ci DefaultClaimIdentity) GetClaimValue(cType string) string {
-	return ci.claims[cType]
+	return ci.claims[cType].(string)
 }
 
 func (ci DefaultClaimIdentity) IsAuthenticated() bool {
