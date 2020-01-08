@@ -8,17 +8,23 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/infracloudio/msbotbuilder-go/schema"
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"github.com/infracloudio/msbotbuilder-go/schema"
+	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
 
 type ConnectorClient struct {
 	Config ConnectorClientConfig
 }
 
-func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) (int, error) {
+// Post a activity to given URL
+func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
 
-	token := client.getToken()
+	token, err := client.getToken()
+
+	if err != nil {
+		return err
+	}
 
 	jsonStr, _ := json.Marshal(activity)
 	req, err := http.NewRequest("POST", target.String(), bytes.NewBuffer(jsonStr))
@@ -27,15 +33,20 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) (i
 
 	replyClient := &http.Client{}
 	resp, err := replyClient.Do(req)
-	if err != nil {
-		panic(err)
-	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode, err
+	if err != nil || !(resp.StatusCode >= 200 && resp.StatusCode < 400) {
+		return customerror.HttpError {
+			StatusCode: resp.StatusCode,
+			HtErr : err,
+			Body : resp.Body,
+		}
+	}
+	
+	return nil
 }
 
-func (client *ConnectorClient) getToken() string {
+func (client *ConnectorClient) getToken() (string, error) {
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
@@ -43,19 +54,35 @@ func (client *ConnectorClient) getToken() string {
 	data.Set("client_secret", client.Config.Credentials.GetAppPassword())
 	data.Set("scope", auth.TO_CHANNEL_FROM_BOT_OAUTH_SCOPE)
 
-	u, _ := url.ParseRequestURI(client.Config.AuthURL.String())
+	u, err := url.ParseRequestURI(client.Config.AuthURL.String())
+
+	if err != nil {
+		return "",err
+	}
 
 	authClient := &http.Client{}
 
-	r, _ := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
+	r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-	resp, _ := authClient.Do(r)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := authClient.Do(r)
 	defer resp.Body.Close()
+
+	if err != nil {
+		return "", customerror.HttpError {
+			StatusCode: resp.StatusCode,
+			HtErr : err,
+			Body : resp.Body,
+		}
+	}
 
 	a := &schema.AuthResponse{}
 	json.NewDecoder(resp.Body).Decode(a)
 
-	return a.AccessToken
+	return a.AccessToken, nil
 }

@@ -12,6 +12,7 @@ type ConnectorClientConfig struct {
 	AuthURL     url.URL
 }
 
+// NewClientConfig creates configuration for ConnectorClient
 func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (ConnectorClientConfig, error) {
 
 	parsedURL, err := url.Parse(tokenURL)

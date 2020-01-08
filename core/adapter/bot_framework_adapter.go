@@ -51,17 +51,13 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 
 	conversation := Activate(handler, turnContext).(Conversation)
 
-	clientConfig, _ := client.NewClientConfig(bf.Setting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
+	clientConfig, err := client.NewClientConfig(bf.Setting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
 
 	connectorClient := client.ConnectorClient{clientConfig}
 
 	operation := &ConversationOperation{connectorClient}
 
-	operation.SendActivity(conversation)
-
-
-	return nil
-
+	return operation.SendActivity(conversation)
 }
 
 func (bf *BotFrameworkAdapter) AuthenticateRequest(ctx context.Context, req schema.Activity, headers string) error {
