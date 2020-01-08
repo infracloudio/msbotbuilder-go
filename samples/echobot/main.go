@@ -14,7 +14,7 @@ import (
 var Adapter *adapter.BotFrameworkAdapter
 
 var customHandler = adapter.ActivityHandlerFuncs{
-	MessageFuntion: func(turn *adapter.TurnContext) interface{} {
+	OnMessageFunc: func(turn *adapter.TurnContext) interface{} {
 		return turn.TextMessage("Echo: " + turn.Activity.Text)
 	},
 }

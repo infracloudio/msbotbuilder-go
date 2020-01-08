@@ -10,12 +10,12 @@ type ActivityHandler interface {
 }
 
 type ActivityHandlerFuncs struct {
-	MessageFuntion func(turn *TurnContext) interface{}
+	OnMessageFunc func(turn *TurnContext) interface{}
 }
 
 func (r ActivityHandlerFuncs) OnMessage(turn *TurnContext) interface{} {
-	if r.MessageFuntion != nil {
-		return r.MessageFuntion(turn)
+	if r.OnMessageFunc != nil {
+		return r.OnMessageFunc(turn)
 	}
 	return nil
 }
