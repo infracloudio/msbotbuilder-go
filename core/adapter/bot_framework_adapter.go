@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
@@ -38,8 +39,29 @@ func New(settings Setting) *BotFrameworkAdapter {
 	return &BotFrameworkAdapter{settings}
 }
 
-func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, headers string) error {
-	return bf.AuthenticateRequest(ctx, req, headers)
+func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, headers string, handler ActivityHandler) error {
+	err := bf.AuthenticateRequest(ctx, req, headers)
+	if err != nil {
+		return err
+	}
+
+	turnContext := &TurnContext{
+		Activity: req,
+	}
+
+	conversation := Activate(handler, turnContext).(Conversation)
+
+	clientConfig, _ := client.NewClientConfig(bf.Setting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
+
+	connectorClient := client.ConnectorClient{clientConfig}
+
+	operation := &ConversationOperation{connectorClient}
+
+	operation.SendActivity(conversation)
+
+
+	return nil
+
 }
 
 func (bf *BotFrameworkAdapter) AuthenticateRequest(ctx context.Context, req schema.Activity, headers string) error {

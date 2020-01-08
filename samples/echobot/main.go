@@ -13,6 +13,12 @@ import (
 
 var Adapter *adapter.BotFrameworkAdapter
 
+var customHandler = adapter.ActivityHandlerFuncs{
+	MessageFuntion: func(turn *adapter.TurnContext) interface{} {
+		return turn.TextMessage("Echo: " + turn.Activity.Text)
+	},
+}
+
 func init() {
 	setting := adapter.Setting{
 		AppID:       os.Getenv("APP_ID"),
@@ -38,9 +44,10 @@ func processMessage(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("ACTIVITY:: %#v\n", activity)
 
 	authHeader := req.Header.Get("Authorization")
-	err = Adapter.AuthenticateRequest(ctx, activity, authHeader)
+
+	err = Adapter.ProcessActivity(ctx, activity, authHeader, customHandler)
 	if err != nil {
-		fmt.Println("Failed to authenticate request", err)
+		fmt.Println("Failed: ", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
