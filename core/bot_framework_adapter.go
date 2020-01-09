@@ -68,7 +68,7 @@ func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Reque
 }
 
 func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req schema.Activity, headers string) error {
-	jwtValidation := &auth.JwtTokenValidation{}
+	jwtValidation := auth.NewJwtTokenValidator()
 
 	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 

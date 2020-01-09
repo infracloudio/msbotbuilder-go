@@ -15,15 +15,19 @@ import (
 var metadataURL = "https://login.botframework.com/v1/.well-known/openidconfiguration"
 
 type TokenValidator interface {
-	ValidateToken(authHeader string, credentials CredentialProvider, channelService string, channelID string) ClaimsIdentity
+	AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error)
 }
 
-type JwtTokenValidation struct {
+type JwtTokenValidator struct {
 	Activity   schema.Activity
 	AuthHeader string
 }
 
-func (jv JwtTokenValidation) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
+func NewJwtTokenValidator() TokenValidator {
+	return &JwtTokenValidator{}
+}
+
+func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
 	if authHeader == "" {
 		if credentials.IsAuthenticationDisabled() {
 			return nil, nil
@@ -49,7 +53,7 @@ func (jv JwtTokenValidation) AuthenticateRequest(ctx context.Context, activity s
 	return identity, nil
 }
 
-func (jv JwtTokenValidation) getIdentity(authHeader string) (ClaimsIdentity, error) {
+func (jv JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, error) {
 
 	jwksURL, err := jv.getJwkURL(metadataURL)
 	if err != nil {
@@ -100,7 +104,7 @@ func (jv JwtTokenValidation) getIdentity(authHeader string) (ClaimsIdentity, err
 	return NewClaimIdentity(claims, true), nil
 }
 
-func (jv JwtTokenValidation) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
+func (jv JwtTokenValidator) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
 	// check issuer
 	if identity.GetClaimValue(ISSUER_CLAIM) != TO_BOT_FROM_CHANNEL_TOKEN_ISSUER {
 		return errors.New("Unautorized, invlid token issuer")
@@ -118,7 +122,7 @@ type metadata struct {
 	JwksURI string `json:"jwks_uri"`
 }
 
-func (jv JwtTokenValidation) getJwkURL(metadataURL string) (string, error) {
+func (jv JwtTokenValidator) getJwkURL(metadataURL string) (string, error) {
 	response, err := http.Get(metadataURL)
 	if err != nil {
 		return "", errors.New("Error getting metadata document")
@@ -129,6 +133,6 @@ func (jv JwtTokenValidation) getJwkURL(metadataURL string) (string, error) {
 	return data.JwksURI, err
 }
 
-func (jv JwtTokenValidation) ValidateAuthHeader(ctx context.Context, authHeader string, channelService, channelID, serviceURL string) (ClaimsIdentity, error) {
+func (jv JwtTokenValidator) ValidateAuthHeader(ctx context.Context, authHeader string, channelService, channelID, serviceURL string) (ClaimsIdentity, error) {
 	return nil, errors.New("NotImplemented")
 }
