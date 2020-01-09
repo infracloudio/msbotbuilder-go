@@ -2,7 +2,8 @@ package auth
 
 type CredentialProvider interface {
 	IsValidAppID(appID string) bool
-	GetAppPassword(appID string) string
+	GetAppPassword() string
+	GetAppId() string
 	IsAuthenticationDisabled() bool
 }
 
@@ -15,11 +16,12 @@ func (sp SimpleCredentialProvider) IsValidAppID(appID string) bool {
 	return sp.AppID == appID
 }
 
-func (sp SimpleCredentialProvider) GetAppPassword(appID string) string {
-	if sp.AppID != appID {
-		return ""
-	}
+func (sp SimpleCredentialProvider) GetAppPassword() string {
 	return sp.Password
+}
+
+func (sp SimpleCredentialProvider) GetAppId() string {
+	return sp.AppID
 }
 
 func (sp SimpleCredentialProvider) IsAuthenticationDisabled() bool {

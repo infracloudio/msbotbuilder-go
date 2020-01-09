@@ -6,18 +6,15 @@ import (
 	"net/http"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/core/activity"
 	"github.com/infracloudio/msbotbuilder-go/schema"
 	"github.com/pkg/errors"
 )
 
-const (
-	OAUTH_ENDPOINT = "https://api.botframework.com"
-)
-
 type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
-	ProcessActivity(ctx context.Context, req schema.Activity, headers string, handler activity.Handler) error
+	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 }
 
 type AdapterSetting struct {
@@ -47,8 +44,31 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 	return &BotFrameworkAdapter{settings}
 }
 
-func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, headers string, handler activity.Handler) error {
-	return nil
+func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error {
+	
+	turnContext := &activity.TurnContext{
+		Activity: req,
+	}
+
+	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
+
+	if err != nil {
+		return err
+	}
+
+	connectorClient, err := bf.prepareConnectorClient()
+
+	if err != nil {
+		return err
+	}
+
+	response, err := activity.NewActivityResponse(connectorClient)
+
+	if err != nil {
+		return err
+	}
+
+	return response.SendActivity(replyActivity)
 }
 
 func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error) {
@@ -73,4 +93,21 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
 	return err
+}
+
+func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client,error){
+	
+	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
+
+	if err != nil {
+		return nil, err
+	}
+
+	connectorClient, err := client.NewClient(clientConfig)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return connectorClient, nil
 }
