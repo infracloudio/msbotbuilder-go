@@ -12,19 +12,19 @@ type Config struct {
 }
 
 // NewClientConfig creates configuration for ConnectorClient
-func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (Config, error) {
+func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (*Config, error) {
 
 
 	if len(credentials.GetAppId()) < 0 || len(credentials.GetAppPassword()) < 0 {
-		return Config{}, errors.New("Invalid client credentials")
+		return &Config{}, errors.New("Invalid client credentials")
 	}
 
 	parsedURL, err := url.Parse(tokenURL)
 	if err != nil {
-		return Config{}, errors.New("Invalid token URL")
+		return &Config{}, errors.New("Invalid token URL")
 	}
 
-	return Config{
+	return &Config{
 		Credentials: credentials,
 		AuthURL:     *parsedURL,
 	}, nil

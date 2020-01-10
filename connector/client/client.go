@@ -23,13 +23,13 @@ type ConnectorClient struct {
 	Config
 }
 
-func NewClient(config Config) (Client, error) {
+func NewClient(config *Config) (Client, error) {
 	
-	if (Config{}) == config {
+	if config == nil {
 		return nil, errors.New("Invalid client configuration")
 	}
 	
-	return ConnectorClient{config},nil
+	return &ConnectorClient{*config},nil
 }
 
 // Post a activity to given URL
