@@ -6,13 +6,13 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
 )
 
-type ConnectorClientConfig struct {
+type Config struct {
 	Credentials auth.CredentialProvider
 	AuthURL     url.URL
 }
 
 // NewClientConfig creates configuration for ConnectorClient
-func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (ConnectorClientConfig, error) {
+func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (Config, error) {
 
 
 	if len(credentials.GetAppId()) < 0 || len(credentials.GetAppPassword()) < 0 {
@@ -20,12 +20,11 @@ func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (Conn
 	}
 
 	parsedURL, err := url.Parse(tokenURL)
-
 	if err != nil {
-		return ConnectorClientConfig{}, errors.New("Invalid token URL")
+		return Config{}, errors.New("Invalid token URL")
 	}
 
-	return ConnectorClientConfig{
+	return Config{
 		Credentials: credentials,
 		AuthURL:     *parsedURL,
 	}, nil

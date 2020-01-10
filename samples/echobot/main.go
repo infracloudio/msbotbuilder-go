@@ -45,7 +45,6 @@ func processMessage(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = adapter.ProcessActivity(ctx, activity, customHandler)
-
 	if err != nil {
 		fmt.Println("Failed to process request", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)

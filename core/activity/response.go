@@ -35,6 +35,7 @@ func (response *ActivityResponse) sendTextMessage(activity schema.Activity) erro
 	if err != nil {
 		return err
 	}
+	
 	activity = response.prepareActivity(activity)
 	err = response.Client.Post(url, activity)
 	if err != nil {
@@ -56,7 +57,6 @@ func (response *ActivityResponse) prepareActivity(activity schema.Activity) sche
 func (response *ActivityResponse) prepareURL(activity schema.Activity) (url.URL, error) {
 
 	u, err := url.Parse(activity.ServiceUrl)
-
 	if err != nil {
 		return *u, err
 	}

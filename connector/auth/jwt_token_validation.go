@@ -51,7 +51,6 @@ func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity sc
 	}
 
 	err = jv.validateIdentity(identity, credentials)
-
 	if err != nil {
 		return nil, err
 	}

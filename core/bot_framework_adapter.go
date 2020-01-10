@@ -51,19 +51,16 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 	}
 
 	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
-
 	if err != nil {
 		return err
 	}
 
 	connectorClient, err := bf.prepareConnectorClient()
-
 	if err != nil {
 		return err
 	}
 
 	response, err := activity.NewActivityResponse(connectorClient)
-
 	if err != nil {
 		return err
 	}
@@ -98,13 +95,11 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client,error){
 	
 	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
-
 	if err != nil {
 		return nil, err
 	}
 
 	connectorClient, err := client.NewClient(clientConfig)
-
 	if err != nil {
 		return nil, err
 	}
