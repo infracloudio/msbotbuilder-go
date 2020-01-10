@@ -16,7 +16,7 @@ func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (Conf
 
 
 	if len(credentials.GetAppId()) < 0 || len(credentials.GetAppPassword()) < 0 {
-		errors.New("Invalid client credentials")
+		return Config{}, errors.New("Invalid client credentials")
 	}
 
 	parsedURL, err := url.Parse(tokenURL)

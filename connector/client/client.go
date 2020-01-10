@@ -56,7 +56,7 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 	replyClient := &http.Client{}
 	
 	resp, err := replyClient.Do(req)
-	if err != nil || resp.StatusCode != 201 {
+	if err != nil || resp.StatusCode != http.StatusCreated {
 		return customerror.HttpError{
 			StatusCode: resp.StatusCode,
 			HtErr:      err,
@@ -73,11 +73,11 @@ func (client *ConnectorClient) getToken() (string, error) {
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
-	data.Set("client_id", client.Config.Credentials.GetAppId())
-	data.Set("client_secret", client.Config.Credentials.GetAppPassword())
+	data.Set("client_id", client.Credentials.GetAppId())
+	data.Set("client_secret", client.Credentials.GetAppPassword())
 	data.Set("scope", auth.TO_CHANNEL_FROM_BOT_OAUTH_SCOPE)
 
-	u, err := url.ParseRequestURI(client.Config.AuthURL.String())
+	u, err := url.ParseRequestURI(client.AuthURL.String())
 	if err != nil {
 		return "", err
 	}
