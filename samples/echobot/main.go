@@ -7,9 +7,19 @@ import (
 	"os"
 
 	"github.com/infracloudio/msbotbuilder-go/core"
+	"github.com/infracloudio/msbotbuilder-go/core/activity"
+	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
 var adapter core.Adapter
+
+var customHandler = activity.HandlerFuncs{
+	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
+		activity := turn.Activity
+		activity.Text = "Echo: " + activity.Text
+		return turn.TextMessage(activity), nil
+	},
+}
 
 func init() {
 	setting := core.AdapterSetting{
@@ -30,6 +40,13 @@ func processMessage(w http.ResponseWriter, req *http.Request) {
 	activity, err := adapter.ParseRequest(ctx, req)
 	if err != nil {
 		fmt.Println("Failed to parse request.", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = adapter.ProcessActivity(ctx, activity, customHandler)
+	if err != nil {
+		fmt.Println("Failed to process request", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

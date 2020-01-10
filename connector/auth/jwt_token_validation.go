@@ -50,6 +50,11 @@ func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity sc
 		return nil, errors.New("Unauthorized, service_url claim is invalid")
 	}
 
+	err = jv.validateIdentity(identity, credentials)
+	if err != nil {
+		return nil, err
+	}
+
 	return identity, nil
 }
 
@@ -131,8 +136,4 @@ func (jv JwtTokenValidator) getJwkURL(metadataURL string) (string, error) {
 	data := metadata{}
 	err = json.NewDecoder(response.Body).Decode(&data)
 	return data.JwksURI, err
-}
-
-func (jv JwtTokenValidator) ValidateAuthHeader(ctx context.Context, authHeader string, channelService, channelID, serviceURL string) (ClaimsIdentity, error) {
-	return nil, errors.New("NotImplemented")
 }
