@@ -10,12 +10,11 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
+const replyToAcitivityURL = "v3/conversations/{conversationId}/activities/{activityId}"
+
 type Response interface {
 	SendActivity(activity schema.Activity) error
 }
-
-const replyToAcitivityURL = "v3/conversations/{conversationId}/activities/{activityId}"
-
 
 type ActivityResponse struct {
 	Client client.Client
