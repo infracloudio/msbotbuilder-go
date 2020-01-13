@@ -20,7 +20,7 @@ type Attachment struct {
 	ContentUrl string `json:"contentUrl,omitempty"`
 
 	// Embedded content
-	Content map[string]interface{} `json:"content,omitempty"`
+	Content string `json:"content,omitempty"`
 
 	// (OPTIONAL) The name of the attachment
 	Name string `json:"name,omitempty"`
