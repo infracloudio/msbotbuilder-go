@@ -17,12 +17,12 @@ The program starts by creating a hanlder struct of type `activity.HandlerFuncs`.
 This struct contains defination for the `OnMessageFunc` field which is a treated as a callback by the library
 on the respective event.
 	var customHandler = activity.HandlerFuncs{
-	main: func(turn *activity.TurnContext) (schema.Activity, error) {
+	  OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
 			activity := turn.Activity
 			activity.Text = "Echo: " + activity.Text
 			return turn.TextMessage(activity), nil
 		},
-	}
+	  }
 
 The `init` function picks up the APP_ID and APP_PASSWORD methods from the environment session
 and creates an `adapter` using this.
@@ -36,5 +36,11 @@ the activity as per the hanlder functions and send the response to the connector
 	err = adapter.ProcessActivity(ctx, activity, customHandler)
 
 In case of no error, this web responds with a 200 status
+
+To expose this local IP outside your local network, a tool like ngrok can be used.
+
+	ngrok http 3978
+
+The server is then available on a IP similar to http://92832de0.ngrok.io
 */
 package main

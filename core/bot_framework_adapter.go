@@ -13,13 +13,13 @@ import (
 )
 
 // Adapter is the primary interface for the user program to perform operations with
-// the connector service
+// the connector service.
 type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 }
 
-// AdapterSetting is the configuration for the Adapter
+// AdapterSetting is the configuration for the Adapter.
 type AdapterSetting struct {
 	AppID              string
 	AppPassword        string
@@ -30,12 +30,12 @@ type AdapterSetting struct {
 	CredentialProvider auth.CredentialProvider
 }
 
-// BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program
+// BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
 type BotFrameworkAdapter struct {
 	AdapterSetting
 }
 
-// NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings
+// NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings.
 func NewBotAdapter(settings AdapterSetting) Adapter {
 	// TODO: Support other credential providers - OpenID, MicrosoftApp, Government
 	settings.CredentialProvider = auth.SimpleCredentialProvider{
@@ -50,7 +50,7 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
-// sends it to the connector service
+// sends it to the connector service.
 func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error {
 	
 	turnContext := &activity.TurnContext{
@@ -76,9 +76,12 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:
-// 1. Validate the structure
+//
+// 1. Validate the structure.
+//
 // 2. Authenticate the request (using authenticateRequest())
-// Returns an Activity value on successfull parsing
+//
+// Returns an Activity value on successfull parsing.
 func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error) {
 	activity := schema.Activity{}
 	// Find auth headers

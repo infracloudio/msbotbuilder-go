@@ -10,19 +10,19 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
-// Response provides functionalities to send activity to the connector service
+// Response provides functionalities to send activity to the connector service.
 type Response interface {
 	SendActivity(activity schema.Activity) error
 }
 
 const replyToAcitivityURL = "v3/conversations/{conversationId}/activities/{activityId}"
 
-// DefaultResponse is the default implementation of Response
+// DefaultResponse is the default implementation of Response.
 type DefaultResponse struct {
 	Client client.Client
 }
 
-// SendActivity Send an activity to the BOT connector service
+// SendActivity sends an activity to the BOT connector service.
 func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
 	if activity.Type == schema.Message {
 		return response.sendTextMessage(activity)
@@ -70,7 +70,7 @@ func (response *DefaultResponse) prepareURL(activity schema.Activity) (url.URL, 
 	return *u, nil
 }
 
-// NewActivityResponse provides a ActivityReponse implementaton of Response
+// NewActivityResponse provides a DefaultResponse implementaton of Response.
 func NewActivityResponse(connectorClient client.Client) (Response, error) {
 	if connectorClient == nil {
 		return nil, errors.New("Invalid connector client for ActivityResponse")

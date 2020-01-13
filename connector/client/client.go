@@ -15,18 +15,18 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
 
-// Client provides interface to send requests to the connector service
+// Client provides interface to send requests to the connector service.
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
 }
 
-// ConnectorClient implements Client to send HTTP requests to the connector service
+// ConnectorClient implements Client to send HTTP requests to the connector service.
 type ConnectorClient struct {
 	Config
 }
 
-// NewClient constructs and retirns a new ConnectorClient with provided configuration
-// returns error if the configuration is nil
+// NewClient constructs and returns a new ConnectorClient with provided configuration.
+// Returns error if Config passed is nil.
 func NewClient(config *Config) (Client, error) {
 	
 	if config == nil {
@@ -36,9 +36,10 @@ func NewClient(config *Config) (Client, error) {
 	return &ConnectorClient{*config},nil
 }
 
-// Post a activity to given URL
-// Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header
-// Returns any error as received from the call to connector service
+// Post a activity to given URL.
+// 
+// Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
+// Returns any error as received from the call to connector service.
 func (client ConnectorClient) Post(target url.URL, activity schema.Activity) error {
 
 	token, err := client.getToken()
