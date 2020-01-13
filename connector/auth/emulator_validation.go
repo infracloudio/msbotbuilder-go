@@ -7,6 +7,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// IsTokenFromEmulator checks if the request is from emulator by probing the bearer token in request header
 func IsTokenFromEmulator(authHeader string) bool {
 	if authHeader == "" {
 		return false
@@ -42,5 +43,6 @@ func IsTokenFromEmulator(authHeader string) bool {
 	return true
 }
 
+// EmulatorTokenValidator provides functionality to check if a request is from an emulator
 type EmulatorTokenValidator struct {
 }

@@ -12,11 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Adapter is the primary interface for the user program to perform operations with
+// the connector service
 type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 }
 
+// AdapterSetting is the configuration for the Adapter
 type AdapterSetting struct {
 	AppID              string
 	AppPassword        string
@@ -27,10 +30,12 @@ type AdapterSetting struct {
 	CredentialProvider auth.CredentialProvider
 }
 
+// BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program
 type BotFrameworkAdapter struct {
 	AdapterSetting
 }
 
+// NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings
 func NewBotAdapter(settings AdapterSetting) Adapter {
 	// TODO: Support other credential providers - OpenID, MicrosoftApp, Government
 	settings.CredentialProvider = auth.SimpleCredentialProvider{
@@ -39,11 +44,13 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 	}
 
 	if settings.ChannelService == "" {
-		settings.ChannelService = auth.CHANNEL_SERVICE
+		settings.ChannelService = auth.ChannelService
 	}
 	return &BotFrameworkAdapter{settings}
 }
 
+// ProcessActivity receives an activity, processes it as specified in by the 'handler' and
+// sends it to the connector service
 func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error {
 	
 	turnContext := &activity.TurnContext{
@@ -68,6 +75,10 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 	return response.SendActivity(replyActivity)
 }
 
+// ParseRequest parses the received activity in a HTTP reuqest to:
+// 1. Validate the structure
+// 2. Authenticate the request (using authenticateRequest())
+// Returns an Activity value on successfull parsing
 func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error) {
 	activity := schema.Activity{}
 	// Find auth headers
@@ -94,7 +105,7 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 
 func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client,error){
 	
-	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.TO_CHANNEL_FROM_BOT_LOGIN_URL[0])
+	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ package schema
 type AttachmentView struct {
 
 	// Id of the attachment
-	ViewId string `json:"viewId,omitempty"`
+	ViewID string `json:"viewId,omitempty"`
 
 	// Size of the attachment
 	Size int32 `json:"size,omitempty"`

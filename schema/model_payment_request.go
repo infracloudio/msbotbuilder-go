@@ -14,7 +14,7 @@ package schema
 type PaymentRequest struct {
 
 	// ID of this payment request
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// Allowed payment methods for this request
 	MethodData []PaymentMethodData `json:"methodData,omitempty"`

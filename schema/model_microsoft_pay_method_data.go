@@ -14,7 +14,7 @@ package schema
 type MicrosoftPayMethodData struct {
 
 	// Microsoft Pay Merchant ID
-	MerchantId string `json:"merchantId,omitempty"`
+	MerchantID string `json:"merchantId,omitempty"`
 
 	// Supported payment networks (e.g., \"visa\" and \"mastercard\")
 	SupportedNetworks []string `json:"supportedNetworks,omitempty"`

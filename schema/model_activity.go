@@ -19,7 +19,7 @@ type Activity struct {
 	Type ActivityTypes `json:"type,omitempty"`
 
 	// Contains an ID that uniquely identifies the activity on the channel.
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// Contains the date and time that the message was sent, in UTC, expressed in ISO-8601 format.
 	Timestamp time.Time `json:"timestamp,omitempty"`
@@ -31,13 +31,13 @@ type Activity struct {
 	LocalTimezone string `json:"localTimezone,omitempty"`
 
 	// A string containing an IRI identifying the caller of a bot. This field is not intended to be transmitted  over the wire, but is instead populated by bots and clients based on cryptographically verifiable data  that asserts the identity of the callers (e.g. tokens).
-	CallerId string `json:"callerId,omitempty"`
+	CallerID string `json:"callerId,omitempty"`
 
 	// Contains the URL that specifies the channel's service endpoint. Set by the channel.
-	ServiceUrl string `json:"serviceUrl,omitempty"`
+	ServiceURL string `json:"serviceUrl,omitempty"`
 
 	// Contains an ID that uniquely identifies the channel. Set by the channel.
-	ChannelId string `json:"channelId,omitempty"`
+	ChannelID string `json:"channelId,omitempty"`
 
 	From ChannelAccount `json:"from,omitempty"`
 
@@ -96,7 +96,7 @@ type Activity struct {
 	Action string `json:"action,omitempty"`
 
 	// Contains the ID of the message to which this message is a reply.
-	ReplyToId string `json:"replyToId,omitempty"`
+	ReplyToID string `json:"replyToId,omitempty"`
 
 	// A descriptive label for the activity.
 	Label string `json:"label,omitempty"`

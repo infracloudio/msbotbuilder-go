@@ -15,14 +15,18 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
 
+// Client provides interface to send requests to the connector service
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
 }
 
+// ConnectorClient implements Client to send HTTP requests to the connector service
 type ConnectorClient struct {
 	Config
 }
 
+// NewClient constructs and retirns a new ConnectorClient with provided configuration
+// returns error if the configuration is nil
 func NewClient(config *Config) (Client, error) {
 	
 	if config == nil {
@@ -33,6 +37,8 @@ func NewClient(config *Config) (Client, error) {
 }
 
 // Post a activity to given URL
+// Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header
+// Returns any error as received from the call to connector service
 func (client ConnectorClient) Post(target url.URL, activity schema.Activity) error {
 
 	token, err := client.getToken()
@@ -57,7 +63,7 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 	
 	resp, err := replyClient.Do(req)
 	if err != nil || resp.StatusCode != http.StatusCreated {
-		return customerror.HttpError{
+		return customerror.HTTPError{
 			StatusCode: resp.StatusCode,
 			HtErr:      err,
 			Body:       resp.Body,
@@ -73,9 +79,9 @@ func (client *ConnectorClient) getToken() (string, error) {
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
-	data.Set("client_id", client.Credentials.GetAppId())
+	data.Set("client_id", client.Credentials.GetAppID())
 	data.Set("client_secret", client.Credentials.GetAppPassword())
-	data.Set("scope", auth.TO_CHANNEL_FROM_BOT_OAUTH_SCOPE)
+	data.Set("scope", auth.ToChannelFromBotOauthScope)
 
 	u, err := url.ParseRequestURI(client.AuthURL.String())
 	if err != nil {
@@ -93,7 +99,7 @@ func (client *ConnectorClient) getToken() (string, error) {
 
 	resp, err := authClient.Do(r)
 	if err != nil {
-		return "", customerror.HttpError{
+		return "", customerror.HTTPError{
 			StatusCode: resp.StatusCode,
 			HtErr:      err,
 			Body:       resp.Body,

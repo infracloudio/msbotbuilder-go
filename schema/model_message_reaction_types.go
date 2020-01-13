@@ -15,6 +15,6 @@ type MessageReactionTypes string
 
 // List of MessageReactionTypes
 const (
-	LIKE     MessageReactionTypes = "like"
-	PLUS_ONE MessageReactionTypes = "plusOne"
+	Like    MessageReactionTypes = "like"
+	PlusOne MessageReactionTypes = "plusOne"
 )

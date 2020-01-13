@@ -22,10 +22,10 @@ type AnimationCard struct {
 	// Text of this card
 	Text string `json:"text,omitempty"`
 
-	Image ThumbnailUrl `json:"image,omitempty"`
+	Image ThumbnailURL `json:"image,omitempty"`
 
 	// Media URLs for this card. When this field contains more than one URL, each URL is an alternative format of the same content.
-	Media []MediaUrl `json:"media,omitempty"`
+	Media []MediaURL `json:"media,omitempty"`
 
 	// Actions on this card
 	Buttons []CardAction `json:"buttons,omitempty"`

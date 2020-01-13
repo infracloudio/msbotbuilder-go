@@ -19,5 +19,5 @@ type Error struct {
 	// Error message
 	Message string `json:"message,omitempty"`
 
-	InnerHttpError InnerHttpError `json:"innerHttpError,omitempty"`
+	InnerHTTPError InnerHTTPError `json:"innerHttpError,omitempty"`
 }
