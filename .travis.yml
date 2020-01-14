@@ -1,0 +1,15 @@
+language: go
+
+go:
+  - '1.13'
+
+install:
+  - go get -u golang.org/x/lint/golint
+
+before_script:
+  - hack/verify-gofmt.sh
+  - hack/verify-govet.sh
+  - hack/verify-golint.sh
+
+script:
+  - go test -race -cover ./...
