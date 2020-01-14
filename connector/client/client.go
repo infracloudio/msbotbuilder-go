@@ -112,7 +112,7 @@ func (client *ConnectorClient) getToken() (string, error) {
 	a := &schema.AuthResponse{}
 	err = json.NewDecoder(resp.Body).Decode(a)
 	if err != nil {
-		return "", fmt.Errorf("Invalid activity to send", err)
+		return "", fmt.Errorf("Invalid activity to send %s", err)
 	}
 
 	return a.AccessToken, nil
