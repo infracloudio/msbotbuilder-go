@@ -52,7 +52,7 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
 // sends it to the connector service.
 func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error {
-	
+
 	turnContext := &activity.TurnContext{
 		Activity: req,
 	}
@@ -106,8 +106,8 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 	return err
 }
 
-func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client,error){
-	
+func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client, error) {
+
 	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
 	if err != nil {
 		return nil, err

@@ -1,12 +1,11 @@
 package core_test
 
-
 import (
 	"fmt"
-	"os"
 	"github.com/infracloudio/msbotbuilder-go/core"
 	"github.com/infracloudio/msbotbuilder-go/core/activity"
 	"github.com/infracloudio/msbotbuilder-go/schema"
+	"os"
 )
 
 func Example() {
@@ -20,10 +19,9 @@ func Example() {
 	// Make an adapter to perform operations with the Bot Framework using this library.
 	adapter = core.NewBotAdapter(setting)
 
-
 	// Create a handler that defines operations to be performed on respective events.
 	// Following defines the operation to be performed on the 'message' event.
- 	var customHandler = activity.HandlerFuncs{
+	var customHandler = activity.HandlerFuncs{
 		OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
 			activity := turn.Activity
 			activity.Text = "Echo: " + activity.Text
@@ -35,18 +33,18 @@ func Example() {
 	activity := schema.Activity{
 		Type: schema.Message,
 		From: &schema.ChannelAccount{
-			ID: "12345678",
+			ID:   "12345678",
 			Name: "Pepper's News Feed",
 		},
-		Conversation : &schema.ConversationAccount{
-			ID: "abcd1234",
+		Conversation: &schema.ConversationAccount{
+			ID:   "abcd1234",
 			Name: "Convo1",
 		},
-		Recipient : &schema.ChannelAccount{
-			ID: "1234abcd",
+		Recipient: &schema.ChannelAccount{
+			ID:   "1234abcd",
 			Name: "SteveW",
 		},
-		Text: "Message from Teams Client",
+		Text:      "Message from Teams Client",
 		ReplyToID: "5d5cdc723",
 	}
 

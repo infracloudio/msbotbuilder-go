@@ -2,8 +2,8 @@ package client
 
 import (
 	"errors"
-	"net/url"
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"net/url"
 )
 
 // Config represents the credentials for a user program and the URL for validating the credentials.
@@ -14,7 +14,6 @@ type Config struct {
 
 // NewClientConfig creates configuration for ConnectorClient.
 func NewClientConfig(credentials auth.CredentialProvider, tokenURL string) (*Config, error) {
-
 
 	if len(credentials.GetAppID()) < 0 || len(credentials.GetAppPassword()) < 0 {
 		return &Config{}, errors.New("Invalid client credentials")

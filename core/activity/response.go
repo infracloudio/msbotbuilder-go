@@ -3,8 +3,8 @@ package activity
 import (
 	"errors"
 	"net/url"
-	"strings"
 	"path"
+	"strings"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/schema"
@@ -36,7 +36,7 @@ func (response *DefaultResponse) sendTextMessage(activity schema.Activity) error
 	if err != nil {
 		return err
 	}
-	
+
 	activity = response.prepareActivity(activity)
 	err = response.Client.Post(url, activity)
 	if err != nil {

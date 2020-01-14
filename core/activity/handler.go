@@ -25,7 +25,7 @@ func (r HandlerFuncs) OnMessage(turn *TurnContext) (schema.Activity, error) {
 	return schema.Activity{}, errors.New("No handler found for this activity type")
 }
 
-// PrepareActivityContext routes the received Activity to respective handler function. 
+// PrepareActivityContext routes the received Activity to respective handler function.
 // Returns the result of the handler function.
 func PrepareActivityContext(handler Handler, context *TurnContext) (schema.Activity, error) {
 	if context.Activity.Type == schema.Message {
