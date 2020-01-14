@@ -3,12 +3,12 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"fmt"
-	"errors"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
 	"github.com/infracloudio/msbotbuilder-go/schema"
@@ -28,16 +28,16 @@ type ConnectorClient struct {
 // NewClient constructs and returns a new ConnectorClient with provided configuration.
 // Returns error if Config passed is nil.
 func NewClient(config *Config) (Client, error) {
-	
+
 	if config == nil {
 		return nil, errors.New("Invalid client configuration")
 	}
-	
-	return &ConnectorClient{*config},nil
+
+	return &ConnectorClient{*config}, nil
 }
 
 // Post a activity to given URL.
-// 
+//
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
 func (client ConnectorClient) Post(target url.URL, activity schema.Activity) error {
@@ -61,7 +61,7 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	replyClient := &http.Client{}
-	
+
 	resp, err := replyClient.Do(req)
 	if err != nil || resp.StatusCode != http.StatusCreated {
 		return customerror.HTTPError{
