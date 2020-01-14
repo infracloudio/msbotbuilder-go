@@ -10,8 +10,8 @@
 
 package schema
 
-// InnerHttpError - Object representing inner http error
-type InnerHttpError struct {
+// InnerHTTPError - Object representing inner http error
+type InnerHTTPError struct {
 
 	// HttpStatusCode from failed request
 	StatusCode int32 `json:"statusCode,omitempty"`

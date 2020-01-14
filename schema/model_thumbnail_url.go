@@ -10,11 +10,11 @@
 
 package schema
 
-// ThumbnailUrl - Thumbnail URL
-type ThumbnailUrl struct {
+// ThumbnailURL - Thumbnail URL
+type ThumbnailURL struct {
 
 	// URL pointing to the thumbnail to use for media content
-	Url string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 
 	// HTML alt text to include on this thumbnail image
 	Alt string `json:"alt,omitempty"`

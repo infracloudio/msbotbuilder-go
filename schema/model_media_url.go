@@ -10,11 +10,11 @@
 
 package schema
 
-// MediaUrl - Media URL
-type MediaUrl struct {
+// MediaURL - Media URL
+type MediaURL struct {
 
 	// Url for the media
-	Url string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 
 	// Optional profile hint to the client to differentiate multiple MediaUrl objects from each other
 	Profile string `json:"profile,omitempty"`

@@ -15,10 +15,10 @@ type EndOfConversationCodes string
 
 // List of EndOfConversationCodes
 const (
-	UNKNOWN                    EndOfConversationCodes = "unknown"
-	COMPLETED_SUCCESSFULLY     EndOfConversationCodes = "completedSuccessfully"
-	USER_CANCELLED             EndOfConversationCodes = "userCancelled"
-	BOT_TIMED_OUT              EndOfConversationCodes = "botTimedOut"
-	BOT_ISSUED_INVALID_MESSAGE EndOfConversationCodes = "botIssuedInvalidMessage"
-	CHANNEL_FAILED             EndOfConversationCodes = "channelFailed"
+	Unknown                 EndOfConversationCodes = "unknown"
+	CompletedSuccessfully   EndOfConversationCodes = "completedSuccessfully"
+	UserCancelled           EndOfConversationCodes = "userCancelled"
+	BotTimedOut             EndOfConversationCodes = "botTimedOut"
+	BotIssuedInvalidMessage EndOfConversationCodes = "botIssuedInvalidMessage"
+	ChannelFailed           EndOfConversationCodes = "channelFailed"
 )

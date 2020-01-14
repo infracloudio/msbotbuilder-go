@@ -15,7 +15,7 @@ type InputHints string
 
 // List of InputHints
 const (
-	ACCEPTING_INPUT InputHints = "acceptingInput"
-	IGNORING_INPUT  InputHints = "ignoringInput"
-	EXPECTING_INPUT InputHints = "expectingInput"
+	AcceptingInput InputHints = "acceptingInput"
+	IgnoringInput  InputHints = "ignoringInput"
+	ExpectingInput InputHints = "expectingInput"
 )

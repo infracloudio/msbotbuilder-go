@@ -17,7 +17,7 @@ type Attachment struct {
 	ContentType string `json:"contentType,omitempty"`
 
 	// Content Url
-	ContentUrl string `json:"contentUrl,omitempty"`
+	ContentURL string `json:"contentUrl,omitempty"`
 
 	// Embedded content
 	Content string `json:"content,omitempty"`
@@ -26,5 +26,5 @@ type Attachment struct {
 	Name string `json:"name,omitempty"`
 
 	// (OPTIONAL) Thumbnail associated with attachment
-	ThumbnailUrl string `json:"thumbnailUrl,omitempty"`
+	ThumbnailURL string `json:"thumbnailUrl,omitempty"`
 }

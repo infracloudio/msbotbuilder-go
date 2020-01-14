@@ -14,5 +14,5 @@ package schema
 type ResourceResponse struct {
 
 	// Id of the resource
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 }

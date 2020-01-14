@@ -14,11 +14,11 @@ package schema
 type ConversationResourceResponse struct {
 
 	// ID of the Activity (if sent)
-	ActivityId string `json:"activityId,omitempty"`
+	ActivityID string `json:"activityId,omitempty"`
 
 	// Service endpoint where operations concerning the conversation may be performed
-	ServiceUrl string `json:"serviceUrl,omitempty"`
+	ServiceURL string `json:"serviceUrl,omitempty"`
 
 	// Id of the resource
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 }

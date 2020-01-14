@@ -14,7 +14,7 @@ package schema
 type ConversationReference struct {
 
 	// (Optional) ID of the activity to refer to
-	ActivityId string `json:"activityId,omitempty"`
+	ActivityID string `json:"activityId,omitempty"`
 
 	User ChannelAccount `json:"user,omitempty"`
 
@@ -23,8 +23,8 @@ type ConversationReference struct {
 	Conversation ConversationAccount `json:"conversation,omitempty"`
 
 	// Channel ID
-	ChannelId string `json:"channelId,omitempty"`
+	ChannelID string `json:"channelId,omitempty"`
 
 	// Service endpoint where operations concerning the referenced conversation may be performed
-	ServiceUrl string `json:"serviceUrl,omitempty"`
+	ServiceURL string `json:"serviceUrl,omitempty"`
 }

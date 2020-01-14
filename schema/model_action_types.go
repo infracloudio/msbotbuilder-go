@@ -15,15 +15,15 @@ type ActionTypes string
 
 // List of ActionTypes
 const (
-	OPEN_URL      ActionTypes = "openUrl"
-	IM_BACK       ActionTypes = "imBack"
-	POST_BACK     ActionTypes = "postBack"
-	PLAY_AUDIO    ActionTypes = "playAudio"
-	PLAY_VIDEO    ActionTypes = "playVideo"
-	SHOW_IMAGE    ActionTypes = "showImage"
-	DOWNLOAD_FILE ActionTypes = "downloadFile"
-	SIGNIN        ActionTypes = "signin"
-	CALL          ActionTypes = "call"
-	PAYMENT       ActionTypes = "payment"
-	MESSAGE_BACK  ActionTypes = "messageBack"
+	OpenURL      ActionTypes = "openUrl"
+	ImBack       ActionTypes = "imBack"
+	PostBack     ActionTypes = "postBack"
+	PlayAudio    ActionTypes = "playAudio"
+	PlayVideo    ActionTypes = "playVideo"
+	ShowImage    ActionTypes = "showImage"
+	DownloadFile ActionTypes = "downloadFile"
+	Signin       ActionTypes = "signin"
+	Call         ActionTypes = "call"
+	Payment      ActionTypes = "payment"
+	MessageBack  ActionTypes = "messageBack"
 )

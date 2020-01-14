@@ -14,7 +14,7 @@ package schema
 type PaymentRequestUpdate struct {
 
 	// ID for the payment request to update
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	Details PaymentDetails `json:"details,omitempty"`
 

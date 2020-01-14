@@ -14,19 +14,25 @@ import (
 
 var metadataURL = "https://login.botframework.com/v1/.well-known/openidconfiguration"
 
+// TokenValidator  provides functionanlity to authenticate a request from the connector service.
 type TokenValidator interface {
 	AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error)
 }
 
+// JwtTokenValidator is the default implementation of TokenValidator.
 type JwtTokenValidator struct {
 	Activity   schema.Activity
 	AuthHeader string
 }
 
+// NewJwtTokenValidator return a new TokenValidator value.
 func NewJwtTokenValidator() TokenValidator {
 	return &JwtTokenValidator{}
 }
 
+// AuthenticateRequest autheticates received request from connector service.
+//
+// The Bearer token is validated for the correct issuer, audience, serviceURL expiry and the signature is verified using the public JWK fetched from BotFramework API.
 func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
 	if authHeader == "" {
 		if credentials.IsAuthenticationDisabled() {
@@ -35,18 +41,14 @@ func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity sc
 		return nil, errors.New("Unauthorized Access. Request is not authorized")
 	}
 
-	// if IsTokenFromEmulator(authHeader) {
-	// 	return nil
-	// }
-
 	identity, err := jv.getIdentity(authHeader)
 	if err != nil || !identity.IsAuthenticated() {
 		return nil, err
 	}
 
-	// validate serviceURL
+	// Validate serviceURL
 	// This is done outside validateIdentity method to have provision for channel based authentication in future.
-	if identity.GetClaimValue("serviceurl") != activity.ServiceUrl {
+	if identity.GetClaimValue("serviceurl") != activity.ServiceURL {
 		return nil, errors.New("Unauthorized, service_url claim is invalid")
 	}
 
@@ -93,7 +95,7 @@ func (jv JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, erro
 	// Check allowed signing algorithms
 	alg := token.Header["alg"]
 	isAllowed := func() bool {
-		for _, allowed := range ALLOWED_SIGNING_ALGORITHMS {
+		for _, allowed := range AllowedSigningAlgorithms {
 			if allowed == alg {
 				return true
 			}
@@ -111,12 +113,12 @@ func (jv JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, erro
 
 func (jv JwtTokenValidator) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
 	// check issuer
-	if identity.GetClaimValue(ISSUER_CLAIM) != TO_BOT_FROM_CHANNEL_TOKEN_ISSUER {
+	if identity.GetClaimValue(IssuerClaim) != ToBotFromChannelTokenIssuer {
 		return errors.New("Unautorized, invlid token issuer")
 	}
 
 	// check App ID
-	if !credentials.IsValidAppID(identity.GetClaimValue(AUDIENCE_CLAIM)) {
+	if !credentials.IsValidAppID(identity.GetClaimValue(AudienceClaim)) {
 		return errors.New("Unauthorized. Invalid AppId passed on token")
 	}
 

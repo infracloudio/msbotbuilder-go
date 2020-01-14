@@ -14,7 +14,7 @@ package schema
 type PaymentRequestComplete struct {
 
 	// Payment request ID
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	PaymentRequest PaymentRequest `json:"paymentRequest,omitempty"`
 

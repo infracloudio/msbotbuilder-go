@@ -14,7 +14,7 @@ package schema
 type ConversationMembers struct {
 
 	// Conversation ID
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// List of members in this conversation
 	Members []ChannelAccount `json:"members,omitempty"`

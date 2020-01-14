@@ -15,7 +15,7 @@ type SemanticAction struct {
 	State SemanticActionStates `json:"state,omitempty"`
 
 	// ID of this action
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// Entities associated with this action
 	Entities map[string]Entity `json:"entities,omitempty"`

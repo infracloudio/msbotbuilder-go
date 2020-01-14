@@ -14,13 +14,13 @@ package schema
 type ChannelAccount struct {
 
 	// Channel id for the user or bot on this channel (Example: joe@smith.com, or @joesmith or 123456)
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// Display friendly name
 	Name string `json:"name,omitempty"`
 
 	// This account's object ID within Azure Active Directory (AAD)
-	AadObjectId string `json:"aadObjectId,omitempty"`
+	AadObjectID string `json:"aadObjectId,omitempty"`
 
 	Role RoleTypes `json:"role,omitempty"`
 }

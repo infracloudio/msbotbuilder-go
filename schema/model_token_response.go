@@ -14,7 +14,7 @@ package schema
 type TokenResponse struct {
 
 	// The channelId of the TokenResponse
-	ChannelId string `json:"channelId,omitempty"`
+	ChannelID string `json:"channelId,omitempty"`
 
 	// The connection name
 	ConnectionName string `json:"connectionName,omitempty"`

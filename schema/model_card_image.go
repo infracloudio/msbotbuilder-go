@@ -14,7 +14,7 @@ package schema
 type CardImage struct {
 
 	// URL thumbnail image for major content property
-	Url string `json:"url,omitempty"`
+	URL string `json:"url,omitempty"`
 
 	// Image description intended for screen readers
 	Alt string `json:"alt,omitempty"`

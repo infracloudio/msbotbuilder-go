@@ -14,7 +14,7 @@ package schema
 type PaymentShippingOption struct {
 
 	// String identifier used to reference this PaymentShippingOption
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// Human-readable description of the item
 	Label string `json:"label,omitempty"`

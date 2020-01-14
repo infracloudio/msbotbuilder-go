@@ -25,7 +25,7 @@ type ConversationParameters struct {
 	TopicName string `json:"topicName,omitempty"`
 
 	// (Optional) The tenant ID in which the conversation should be created
-	TenantId string `json:"tenantId,omitempty"`
+	TenantID string `json:"tenantId,omitempty"`
 
 	Activity Activity `json:"activity,omitempty"`
 
