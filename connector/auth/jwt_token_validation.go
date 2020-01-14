@@ -41,12 +41,6 @@ func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity sc
 		return nil, errors.New("Unauthorized Access. Request is not authorized")
 	}
 
-	// TODO : Add emulator verification.
-	//
-	// if IsTokenFromEmulator(authHeader) {
-	// 	return nil
-	// }
-
 	identity, err := jv.getIdentity(authHeader)
 	if err != nil || !identity.IsAuthenticated() {
 		return nil, err
