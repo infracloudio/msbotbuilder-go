@@ -4,6 +4,16 @@ This Microsoft Teams bot uses [msbotbuilder-go](https://github.com/infracloudio/
 
 ## Run the example
 
+#### Step 1: Register MS BOT
+
+Follow the official [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#register-your-web-service-with-the-bot-framework) to create and register your BOT.
+
+Copy `APP_ID` and `APP_PASSWORD` generated for your BOT.
+
+Do not set any messaging endpoint for now.
+
+#### Step 2: Run echo local server
+
 Bring up a terminal and run. Set two variables for the session as `APP_ID` and `APP_PASSWORD` to the values of your BotFramework app_id and password. Then run the `main.go` file.
 
 ```bash
@@ -13,14 +23,24 @@ export APP_ID=MICROSOFT_APP_ID
 go run main.go
 ```
 
-This will start a server which will listen on port 3978
+This will start a server which will listen on port `3978`
 
-  
-  
+#### Step 3: Expose local server with ngrok
+
+Now, in separate terminal, run [ngrok](https://ngrok.com/download) command to expose your local server to outside world.
+
+```sh
+$ ngrok http 3978
+```
+
+Copy `https` endpoint, go to [Bot Framework](https://dev.botframework.com/bots) dashboard and set messaging endpoint under Settings.
+
+#### Step 4: Test the BOT
+
+You can either test BOT on BotFramework portal or you can create app manifest and install the App on Teams as mentioned [here](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#create-your-app-manifest-and-package)
+
 
 ## Understanding the example
-
-  
 
 The program starts by creating a handler struct of type `activity.HandlerFuncs`.
 
