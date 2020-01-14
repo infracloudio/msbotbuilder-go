@@ -12,7 +12,7 @@ $ go get -u github.com/infracloudio/msbotbuilder-go/...
 
 The [samples](samples/echobot) contains a sample bot created using thie library which echoes any message received.
 
-Before running this, two environment variables are needed viz. the Bot Framework application ID and the password. This can be received after [registration of a new bot](https://dev.botframework.com/new).
+Before running this, two environment variables are needed viz. the Bot Framework application ID and the password. This can be received after [registration of a new bot](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#register-your-web-service-with-the-bot-framework).
 
 ```sh
 $ export APP_ID=MICROSOFT_APP_ID
