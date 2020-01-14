@@ -12,7 +12,7 @@ $ go get -u github.com/infracloudio/msbotbuilder-go/...
 
 ## Get started with example
 
-The [samples](samples/echobot) contains a sample bot created using thie library which echoes any message received.
+The [samples](samples/echobot) contains a sample bot created using this library which echoes any message received.
 
 Before running this, two environment variables are needed viz. the Bot Framework application ID and the password. This can be received after [registration of a new bot](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#register-your-web-service-with-the-bot-framework).
 
@@ -24,13 +24,13 @@ $ export APP_PASSWORD=MICROSOFT_APP_PASSWORD
 Then, from the root of this repository,
 
 ```sh
-$ cd sameples/echobot
+$ cd samples/echobot
 $ go run main.go
 ```
 
 This starts a webserver on port `3978` by default.
 
-This is the endpoint which the connector service for the registered bot should point to. For a descriptive understanding of the example refer the [sample](samples/)
+This is the endpoint which the connector service for the registered bot should point to. For a descriptive understanding of the example refer the [sample](samples/).
 
 ## Contributing
 
