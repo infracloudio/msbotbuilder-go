@@ -1,4 +1,4 @@
-# Bot Framework SDK for GoLang
+# Microsoft Bot Framework SDK for Go
 
 [![Build Status](https://travis-ci.org/infracloudio/msbotbuilder-go.svg?branch=develop)](https://travis-ci.org/infracloudio/msbotbuilder-go)
 
