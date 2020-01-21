@@ -9,11 +9,26 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
 	"github.com/infracloudio/msbotbuilder-go/schema"
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
+
+type jwtCache struct {
+	token  string
+	Expiry time.Time
+}
+
+func (cache *jwtCache) IsExpired() bool {
+	if diff := time.Now().Sub(cache.Expiry).Hours(); diff > 0 {
+		return true
+	}
+	return false
+}
+
+var cache *jwtCache
 
 // Client provides interface to send requests to the connector service.
 type Client interface {
@@ -78,42 +93,51 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 func (client *ConnectorClient) getToken() (string, error) {
 
-	data := url.Values{}
-	data.Set("grant_type", "client_credentials")
-	data.Set("client_id", client.Credentials.GetAppID())
-	data.Set("client_secret", client.Credentials.GetAppPassword())
-	data.Set("scope", auth.ToChannelFromBotOauthScope)
+	if cache == nil || cache.IsExpired() {
 
-	u, err := url.ParseRequestURI(client.AuthURL.String())
-	if err != nil {
-		return "", err
-	}
+		data := url.Values{}
+		data.Set("grant_type", "client_credentials")
+		data.Set("client_id", client.Credentials.GetAppID())
+		data.Set("client_secret", client.Credentials.GetAppPassword())
+		data.Set("scope", auth.ToChannelFromBotOauthScope)
 
-	authClient := &http.Client{}
-	r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
-	if err != nil {
-		return "", err
-	}
+		u, err := url.ParseRequestURI(client.AuthURL.String())
+		if err != nil {
+			return "", err
+		}
 
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+		authClient := &http.Client{}
+		r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
+		if err != nil {
+			return "", err
+		}
 
-	resp, err := authClient.Do(r)
-	if err != nil {
-		return "", customerror.HTTPError{
-			StatusCode: resp.StatusCode,
-			HtErr:      err,
-			Body:       resp.Body,
+		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+		resp, err := authClient.Do(r)
+		if err != nil {
+			return "", customerror.HTTPError{
+				StatusCode: resp.StatusCode,
+				HtErr:      err,
+				Body:       resp.Body,
+			}
+		}
+
+		defer resp.Body.Close()
+
+		a := &schema.AuthResponse{}
+		err = json.NewDecoder(resp.Body).Decode(a)
+		if err != nil {
+			return "", fmt.Errorf("Invalid activity to send %s", err)
+		}
+
+		// refresh cache
+		cache = &jwtCache{
+			token:  a.AccessToken,
+			Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
 		}
 	}
 
-	defer resp.Body.Close()
-
-	a := &schema.AuthResponse{}
-	err = json.NewDecoder(resp.Body).Decode(a)
-	if err != nil {
-		return "", fmt.Errorf("Invalid activity to send %s", err)
-	}
-
-	return a.AccessToken, nil
+	return cache.token, nil
 }
