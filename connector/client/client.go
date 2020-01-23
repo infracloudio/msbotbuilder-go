@@ -16,18 +16,6 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
 
-type jwtCache struct {
-	token  string
-	Expiry time.Time
-}
-
-func (cache *jwtCache) IsExpired() bool {
-	if diff := time.Now().Sub(cache.Expiry).Hours(); diff > 0 {
-		return true
-	}
-	return false
-}
-
 var cache *jwtCache
 
 // Client provides interface to send requests to the connector service.
@@ -77,11 +65,16 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 	replyClient := &http.Client{}
 
+
 	resp, err := replyClient.Do(req)
-	if err != nil || resp.StatusCode != http.StatusCreated {
+	if err != nil {
+		return err
+	}
+
+	// TODO :  Replace HTTPError with schema.InnerHTTPError
+	if resp.StatusCode != http.StatusCreated {
 		return customerror.HTTPError{
 			StatusCode: resp.StatusCode,
-			HtErr:      err,
 			Body:       resp.Body,
 		}
 	}
@@ -93,50 +86,50 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 func (client *ConnectorClient) getToken() (string, error) {
 
-	if cache == nil || cache.IsExpired() {
+	if cache != nil && !cache.IsExpired() {
+		return cache.token, nil
+	}
 
-		data := url.Values{}
-		data.Set("grant_type", "client_credentials")
-		data.Set("client_id", client.Credentials.GetAppID())
-		data.Set("client_secret", client.Credentials.GetAppPassword())
-		data.Set("scope", auth.ToChannelFromBotOauthScope)
+	data := url.Values{}
+	data.Set("grant_type", "client_credentials")
+	data.Set("client_id", client.Credentials.GetAppID())
+	data.Set("client_secret", client.Credentials.GetAppPassword())
+	data.Set("scope", auth.ToChannelFromBotOauthScope)
 
-		u, err := url.ParseRequestURI(client.AuthURL.String())
-		if err != nil {
-			return "", err
+	u, err := url.ParseRequestURI(client.AuthURL.String())
+	if err != nil {
+		return "", err
+	}
+
+	authClient := &http.Client{}
+	r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
+	if err != nil {
+		return "", err
+	}
+
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+	// TODO : Replace HTTPError with schema.InnerHTTPError
+	resp, err := authClient.Do(r)
+	if err != nil {
+		return "", customerror.HTTPError{
+			HtErr:      err,
 		}
+	}
 
-		authClient := &http.Client{}
-		r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
-		if err != nil {
-			return "", err
-		}
+	defer resp.Body.Close()
 
-		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	a := &schema.AuthResponse{}
+	err = json.NewDecoder(resp.Body).Decode(a)
+	if err != nil {
+		return "", fmt.Errorf("Invalid activity to send %s", err)
+	}
 
-		resp, err := authClient.Do(r)
-		if err != nil {
-			return "", customerror.HTTPError{
-				StatusCode: resp.StatusCode,
-				HtErr:      err,
-				Body:       resp.Body,
-			}
-		}
-
-		defer resp.Body.Close()
-
-		a := &schema.AuthResponse{}
-		err = json.NewDecoder(resp.Body).Decode(a)
-		if err != nil {
-			return "", fmt.Errorf("Invalid activity to send %s", err)
-		}
-
-		// refresh cache
-		cache = &jwtCache{
-			token:  a.AccessToken,
-			Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
-		}
+	// refresh cache
+	cache = &jwtCache{
+		token:  a.AccessToken,
+		Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
 	}
 
 	return cache.token, nil
