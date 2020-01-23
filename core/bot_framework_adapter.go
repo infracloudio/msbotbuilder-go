@@ -33,6 +33,7 @@ type AdapterSetting struct {
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
 type BotFrameworkAdapter struct {
 	AdapterSetting
+	auth.TokenValidator
 }
 
 // NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings.
@@ -46,7 +47,10 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 	if settings.ChannelService == "" {
 		settings.ChannelService = auth.ChannelService
 	}
-	return &BotFrameworkAdapter{settings}
+
+	jwtValidator := auth.NewJwtTokenValidator()
+
+	return &BotFrameworkAdapter{settings, jwtValidator}
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
@@ -99,9 +103,8 @@ func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Reque
 }
 
 func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req schema.Activity, headers string) error {
-	jwtValidation := auth.NewJwtTokenValidator()
 
-	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
+	_, err := bf.TokenValidator.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
 	return err
 }

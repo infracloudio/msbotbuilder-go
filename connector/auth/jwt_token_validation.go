@@ -15,20 +15,6 @@ import (
 
 var metadataURL = "https://login.botframework.com/v1/.well-known/openidconfiguration"
 
-type jwkCache struct {
-	Keys   jwk.Set
-	Expiry time.Time
-}
-
-func (cache *jwkCache) IsExpired() bool {
-	if diff := time.Now().Sub(cache.Expiry).Hours(); diff > 0 {
-		return true
-	}
-	return false
-}
-
-var cache *jwkCache
-
 // TokenValidator  provides functionanlity to authenticate a request from the connector service.
 type TokenValidator interface {
 	AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error)
@@ -36,8 +22,7 @@ type TokenValidator interface {
 
 // JwtTokenValidator is the default implementation of TokenValidator.
 type JwtTokenValidator struct {
-	Activity   schema.Activity
-	AuthHeader string
+	jwkCache
 }
 
 // NewJwtTokenValidator return a new TokenValidator value.
@@ -79,7 +64,7 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 
 	getKey := func(token *jwt.Token) (interface{}, error) {
 
-		if cache == nil || cache.IsExpired() {
+		if jv.jwkCache.IsExpired() {
 
 			jwksURL, err := jv.getJwkURL(metadataURL)
 			if err != nil {
@@ -91,7 +76,7 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 				return nil, err
 			}
 
-			cache = &jwkCache{
+			jv.jwkCache = jwkCache{
 				Keys:   *set,
 				Expiry: time.Now().Add(time.Hour * 24 * 5),
 			}
@@ -102,7 +87,7 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 			return nil, errors.New("Expecting JWT header to have string kid")
 		}
 
-		if key := cache.Keys.LookupKeyID(keyID); len(key) == 1 {
+		if key := jv.jwkCache.Keys.LookupKeyID(keyID); len(key) == 1 {
 			return key[0].Materialize()
 		}
 
