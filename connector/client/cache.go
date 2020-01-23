@@ -9,10 +9,6 @@ type jwtCache struct {
 
 func (cache *jwtCache) IsExpired() bool {
 
-	// if cache == nil {
-	// 	return true
-	// }
-
 	if diff := time.Now().Sub(cache.Expiry).Hours(); diff > 0 {
 		return true
 	}
