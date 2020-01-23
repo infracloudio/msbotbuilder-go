@@ -65,7 +65,6 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 	replyClient := &http.Client{}
 
-
 	resp, err := replyClient.Do(req)
 	if err != nil {
 		return err
@@ -114,7 +113,7 @@ func (client *ConnectorClient) getToken() (string, error) {
 	resp, err := authClient.Do(r)
 	if err != nil {
 		return "", customerror.HTTPError{
-			HtErr:      err,
+			HtErr: err,
 		}
 	}
 
