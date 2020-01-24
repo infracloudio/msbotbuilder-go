@@ -38,7 +38,11 @@ func Example() {
 	}
 
 	// Make an adapter to perform operations with the Bot Framework using this library.
-	adapter := core.NewBotAdapter(setting)
+	adapter, err := core.NewBotAdapter(setting)
+	if err != nil {
+		fmt.Printf("Failed to create adapter %s", err)
+		return
+	}
 
 	// Create a handler that defines operations to be performed on respective events.
 	// Following defines the operation to be performed on the 'message' event.
@@ -71,7 +75,7 @@ func Example() {
 
 	// Pass the activity and handler to the adapter for proecssing
 	ctx := context.Background()
-	err := adapter.ProcessActivity(ctx, activity, customHandler)
+	err = adapter.ProcessActivity(ctx, activity, customHandler)
 	if err != nil {
 		fmt.Println("Failed to process request", err)
 		return

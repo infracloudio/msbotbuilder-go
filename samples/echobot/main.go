@@ -11,8 +11,6 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
-var adapter core.Adapter
-
 var customHandler = activity.HandlerFuncs{
 	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
 		activity := turn.Activity
@@ -21,34 +19,46 @@ var customHandler = activity.HandlerFuncs{
 	},
 }
 
-func init() {
-	setting := core.AdapterSetting{
-		AppID:       os.Getenv("APP_ID"),
-		AppPassword: os.Getenv("APP_PASSWORD"),
-	}
-	adapter = core.NewBotAdapter(setting)
+// HTTPHandler handles the HTTP requests from then connector service
+type HTTPHandler struct {
+	core.Adapter
 }
 
-func main() {
-	http.HandleFunc("/api/messages", processMessage)
-	fmt.Println("Starting server on port:3978...")
-	http.ListenAndServe(":3978", nil)
-}
+func (ht *HTTPHandler) processMessage(w http.ResponseWriter, req *http.Request) {
 
-func processMessage(w http.ResponseWriter, req *http.Request) {
 	ctx := context.Background()
-	activity, err := adapter.ParseRequest(ctx, req)
+	activity, err := ht.Adapter.ParseRequest(ctx, req)
 	if err != nil {
 		fmt.Println("Failed to parse request.", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = adapter.ProcessActivity(ctx, activity, customHandler)
+	err = ht.Adapter.ProcessActivity(ctx, activity, customHandler)
 	if err != nil {
 		fmt.Println("Failed to process request", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("ACTIVITY:: %#v\n", activity)
+	fmt.Println("Request processed successfully.")
+}
+
+func main() {
+
+	setting := core.AdapterSetting{
+		AppID:       os.Getenv("APP_ID"),
+		AppPassword: os.Getenv("APP_PASSWORD"),
+	}
+
+	adapter, err := core.NewBotAdapter(setting)
+	if err != nil {
+		fmt.Printf("Error creating bot adapter: %s", err)
+		return
+	}
+
+	httpHandler := &HTTPHandler{adapter}
+
+	http.HandleFunc("/api/messages", httpHandler.processMessage)
+	fmt.Println("Starting server on port:3978...")
+	http.ListenAndServe(":3978", nil)
 }

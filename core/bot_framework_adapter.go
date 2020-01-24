@@ -52,10 +52,12 @@ type AdapterSetting struct {
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
 type BotFrameworkAdapter struct {
 	AdapterSetting
+	auth.TokenValidator
+	client.Client
 }
 
 // NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings.
-func NewBotAdapter(settings AdapterSetting) Adapter {
+func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 	// TODO: Support other credential providers - OpenID, MicrosoftApp, Government
 	settings.CredentialProvider = auth.SimpleCredentialProvider{
 		AppID:    settings.AppID,
@@ -65,7 +67,19 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 	if settings.ChannelService == "" {
 		settings.ChannelService = auth.ChannelService
 	}
-	return &BotFrameworkAdapter{settings}
+
+	// Prepare new config and Client
+	clientConfig, err := client.NewClientConfig(settings.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+	if err != nil {
+		return nil, err
+	}
+
+	connectorClient, err := client.NewClient(clientConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator(), connectorClient}, nil
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
@@ -81,12 +95,7 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 		return err
 	}
 
-	connectorClient, err := bf.prepareConnectorClient()
-	if err != nil {
-		return err
-	}
-
-	response, err := activity.NewActivityResponse(connectorClient)
+	response, err := activity.NewActivityResponse(bf.Client)
 	if err != nil {
 		return err
 	}
@@ -118,24 +127,8 @@ func (bf *BotFrameworkAdapter) ParseRequest(ctx context.Context, req *http.Reque
 }
 
 func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req schema.Activity, headers string) error {
-	jwtValidation := auth.NewJwtTokenValidator()
 
-	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
+	_, err := bf.TokenValidator.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
 	return err
-}
-
-func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client, error) {
-
-	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
-	if err != nil {
-		return nil, err
-	}
-
-	connectorClient, err := client.NewClient(clientConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return connectorClient, nil
 }
