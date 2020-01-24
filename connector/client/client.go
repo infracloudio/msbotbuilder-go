@@ -28,8 +28,10 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"github.com/infracloudio/msbotbuilder-go/connector/cache"
 	"github.com/infracloudio/msbotbuilder-go/schema"
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
@@ -42,9 +44,10 @@ type Client interface {
 // ConnectorClient implements Client to send HTTP requests to the connector service.
 type ConnectorClient struct {
 	Config
+	cache.AuthCache
 }
 
-// NewClient constructs and returns a new ConnectorClient with provided configuration.
+// NewClient constructs and returns a new ConnectorClient with provided configuration and an empty cache.
 // Returns error if Config passed is nil.
 func NewClient(config *Config) (Client, error) {
 
@@ -52,14 +55,14 @@ func NewClient(config *Config) (Client, error) {
 		return nil, errors.New("Invalid client configuration")
 	}
 
-	return &ConnectorClient{*config}, nil
+	return &ConnectorClient{*config, cache.AuthCache{}}, nil
 }
 
 // Post a activity to given URL.
 //
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client ConnectorClient) Post(target url.URL, activity schema.Activity) error {
+func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
 
 	token, err := client.getToken()
 	if err != nil {
@@ -97,6 +100,12 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 func (client *ConnectorClient) getToken() (string, error) {
 
+	// Return cached JWT
+	if !client.AuthCache.IsExpired() {
+		return client.AuthCache.Keys.(string), nil
+	}
+
+	// Get new JWT
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 	data.Set("client_id", client.Credentials.GetAppID())
@@ -134,5 +143,11 @@ func (client *ConnectorClient) getToken() (string, error) {
 		return "", fmt.Errorf("Invalid activity to send %s", err)
 	}
 
-	return a.AccessToken, nil
+	// Update cache
+	client.AuthCache = cache.AuthCache{
+		Keys:   a.AccessToken,
+		Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
+	}
+
+	return client.AuthCache.Keys.(string), nil
 }

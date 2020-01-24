@@ -25,8 +25,10 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/infracloudio/msbotbuilder-go/connector/cache"
 	"github.com/infracloudio/msbotbuilder-go/schema"
 	"github.com/lestrrat-go/jwx/jwk"
 )
@@ -40,19 +42,18 @@ type TokenValidator interface {
 
 // JwtTokenValidator is the default implementation of TokenValidator.
 type JwtTokenValidator struct {
-	Activity   schema.Activity
-	AuthHeader string
+	cache.AuthCache
 }
 
-// NewJwtTokenValidator return a new TokenValidator value.
+// NewJwtTokenValidator returns a new TokenValidator value with an empty cache
 func NewJwtTokenValidator() TokenValidator {
-	return &JwtTokenValidator{}
+	return &JwtTokenValidator{cache.AuthCache{}}
 }
 
 // AuthenticateRequest autheticates received request from connector service.
 //
 // The Bearer token is validated for the correct issuer, audience, serviceURL expiry and the signature is verified using the public JWK fetched from BotFramework API.
-func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
+func (jv *JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
 	if authHeader == "" {
 		if credentials.IsAuthenticationDisabled() {
 			return nil, nil
@@ -79,26 +80,34 @@ func (jv JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity sc
 	return identity, nil
 }
 
-func (jv JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, error) {
-
-	jwksURL, err := jv.getJwkURL(metadataURL)
-	if err != nil {
-		return nil, err
-	}
+func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, error) {
 
 	getKey := func(token *jwt.Token) (interface{}, error) {
 
-		set, err := jwk.FetchHTTP(jwksURL)
+		jwksURL, err := jv.getJwkURL(metadataURL)
 		if err != nil {
 			return nil, err
 		}
 
+		// Get new JWKs if the cache is expired
+		if jv.AuthCache.IsExpired() {
+			set, err := jwk.FetchHTTP(jwksURL)
+			if err != nil {
+				return nil, err
+			}
+			// Update the cache
+			// The expiry time is set to be of 5 days
+			jv.AuthCache = cache.AuthCache{
+				Keys:   *set,
+				Expiry: time.Now().Add(time.Hour * 24 * 5),
+			}
+		}
 		keyID, ok := token.Header["kid"].(string)
 		if !ok {
 			return nil, errors.New("Expecting JWT header to have string kid")
 		}
-
-		if key := set.LookupKeyID(keyID); len(key) == 1 {
+		// Return cached JWKs
+		if key := jv.AuthCache.Keys.(jwk.Set).LookupKeyID(keyID); len(key) == 1 {
 			return key[0].Materialize()
 		}
 
@@ -130,7 +139,7 @@ func (jv JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, erro
 	return NewClaimIdentity(claims, true), nil
 }
 
-func (jv JwtTokenValidator) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
+func (jv *JwtTokenValidator) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
 	// check issuer
 	if identity.GetClaimValue(IssuerClaim) != ToBotFromChannelTokenIssuer {
 		return errors.New("Unautorized, invlid token issuer")

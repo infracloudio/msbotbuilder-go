@@ -22,6 +22,7 @@ package core_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/infracloudio/msbotbuilder-go/core"
@@ -38,7 +39,10 @@ func Example() {
 	}
 
 	// Make an adapter to perform operations with the Bot Framework using this library.
-	adapter := core.NewBotAdapter(setting)
+	adapter, err := core.NewBotAdapter(setting)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Create a handler that defines operations to be performed on respective events.
 	// Following defines the operation to be performed on the 'message' event.
@@ -71,7 +75,7 @@ func Example() {
 
 	// Pass the activity and handler to the adapter for proecssing
 	ctx := context.Background()
-	err := adapter.ProcessActivity(ctx, activity, customHandler)
+	err = adapter.ProcessActivity(ctx, activity, customHandler)
 	if err != nil {
 		fmt.Println("Failed to process request", err)
 		return
