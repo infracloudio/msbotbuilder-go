@@ -33,6 +33,7 @@ type AdapterSetting struct {
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
 type BotFrameworkAdapter struct {
 	AdapterSetting
+	client.Client
 }
 
 // NewBotAdapter creates and reuturns a new BotFrameworkAdapter with the specified AdapterSettings.
@@ -46,7 +47,18 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 	if settings.ChannelService == "" {
 		settings.ChannelService = auth.ChannelService
 	}
-	return &BotFrameworkAdapter{settings}
+
+	clientConfig, err := client.NewClientConfig(settings.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+	if err != nil {
+		return nil
+	}
+
+	connectorClient, err := client.NewClient(clientConfig)
+	if err != nil {
+		return nil
+	}
+
+	return &BotFrameworkAdapter{settings, connectorClient}
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
@@ -62,12 +74,7 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 		return err
 	}
 
-	connectorClient, err := bf.prepareConnectorClient()
-	if err != nil {
-		return err
-	}
-
-	response, err := activity.NewActivityResponse(connectorClient)
+	response, err := activity.NewActivityResponse(bf.Client)
 	if err != nil {
 		return err
 	}
@@ -104,19 +111,4 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 	_, err := jwtValidation.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
 	return err
-}
-
-func (bf *BotFrameworkAdapter) prepareConnectorClient() (client.Client, error) {
-
-	clientConfig, err := client.NewClientConfig(bf.AdapterSetting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
-	if err != nil {
-		return nil, err
-	}
-
-	connectorClient, err := client.NewClient(clientConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return connectorClient, nil
 }

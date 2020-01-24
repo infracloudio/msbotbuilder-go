@@ -16,8 +16,6 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema/customerror"
 )
 
-var cache *jwtCache
-
 // Client provides interface to send requests to the connector service.
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
@@ -26,6 +24,7 @@ type Client interface {
 // ConnectorClient implements Client to send HTTP requests to the connector service.
 type ConnectorClient struct {
 	Config
+	jwtCache
 }
 
 // NewClient constructs and returns a new ConnectorClient with provided configuration.
@@ -36,14 +35,14 @@ func NewClient(config *Config) (Client, error) {
 		return nil, errors.New("Invalid client configuration")
 	}
 
-	return &ConnectorClient{*config}, nil
+	return &ConnectorClient{*config, jwtCache{}}, nil
 }
 
 // Post a activity to given URL.
 //
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client ConnectorClient) Post(target url.URL, activity schema.Activity) error {
+func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
 
 	token, err := client.getToken()
 	if err != nil {
@@ -85,8 +84,8 @@ func (client ConnectorClient) Post(target url.URL, activity schema.Activity) err
 
 func (client *ConnectorClient) getToken() (string, error) {
 
-	if cache != nil && !cache.IsExpired() {
-		return cache.token, nil
+	if !client.jwtCache.IsExpired() {
+		return client.jwtCache.token, nil
 	}
 
 	data := url.Values{}
@@ -126,10 +125,10 @@ func (client *ConnectorClient) getToken() (string, error) {
 	}
 
 	// refresh cache
-	cache = &jwtCache{
+	client.jwtCache = jwtCache{
 		token:  a.AccessToken,
 		Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
 	}
 
-	return cache.token, nil
+	return client.jwtCache.token, nil
 }
