@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -52,8 +53,7 @@ func main() {
 
 	adapter, err := core.NewBotAdapter(setting)
 	if err != nil {
-		fmt.Printf("Error creating bot adapter: %s", err)
-		return
+		log.Fatal("Error creating adapter: ", err)
 	}
 
 	httpHandler := &HTTPHandler{adapter}

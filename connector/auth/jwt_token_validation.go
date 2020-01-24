@@ -91,12 +91,10 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 
 		// Get new JWKs if the cache is expired
 		if jv.AuthCache.IsExpired() {
-
 			set, err := jwk.FetchHTTP(jwksURL)
 			if err != nil {
 				return nil, err
 			}
-
 			// Update the cache
 			// The expiry time is set to be of 5 days
 			jv.AuthCache = cache.AuthCache{
@@ -104,12 +102,10 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 				Expiry: time.Now().Add(time.Hour * 24 * 5),
 			}
 		}
-
 		keyID, ok := token.Header["kid"].(string)
 		if !ok {
 			return nil, errors.New("Expecting JWT header to have string kid")
 		}
-
 		// Return cached JWKs
 		if key := jv.AuthCache.Keys.(jwk.Set).LookupKeyID(keyID); len(key) == 1 {
 			return key[0].Materialize()
