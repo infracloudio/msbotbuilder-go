@@ -64,6 +64,7 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 
 	getKey := func(token *jwt.Token) (interface{}, error) {
 
+		// if the jwkCache  is expired, fetch new JWKs(refresh the cache)
 		if jv.jwkCache.IsExpired() {
 
 			jwksURL, err := jv.getJwkURL(metadataURL)

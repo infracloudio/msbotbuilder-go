@@ -48,9 +48,7 @@ func NewBotAdapter(settings AdapterSetting) Adapter {
 		settings.ChannelService = auth.ChannelService
 	}
 
-	jwtValidator := auth.NewJwtTokenValidator()
-
-	return &BotFrameworkAdapter{settings, jwtValidator}
+	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator()}
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
