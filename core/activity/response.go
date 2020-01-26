@@ -58,7 +58,7 @@ func (response *DefaultResponse) ReplyToActivity(conversationID, activityID stri
 
 	err = response.Client.Post(url, activity)
 	if err != nil {
-		errors.Wrap(err, "Failed to send response.")
+		return errors.Wrap(err, "Failed to send response.")
 	}
 	return nil
 }
