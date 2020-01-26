@@ -39,7 +39,7 @@ type Attachment struct {
 	ContentURL string `json:"contentUrl,omitempty"`
 
 	// Embedded content
-	Content string `json:"content,omitempty"`
+	Content interface{} `json:"content,omitempty"`
 
 	// (OPTIONAL) The name of the attachment
 	Name string `json:"name,omitempty"`

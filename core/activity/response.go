@@ -20,13 +20,13 @@
 package activity
 
 import (
-	"errors"
 	"net/url"
 	"path"
 	"strings"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/schema"
+	"github.com/pkg/errors"
 )
 
 // Response provides functionalities to send activity to the connector service.
@@ -43,46 +43,40 @@ type DefaultResponse struct {
 
 // SendActivity sends an activity to the BOT connector service.
 func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
-	if activity.Type == schema.Message {
-		return response.sendTextMessage(activity)
+	if activity.ReplyToID != "" {
+		return response.ReplyToActivity(activity.Conversation.ID, activity.ReplyToID, activity)
 	}
-
-	return errors.New("No operation for specified Activity type")
+	return response.SendToConversation(activity.Conversation.ID, activity)
 }
 
-func (response *DefaultResponse) sendTextMessage(activity schema.Activity) error {
-	url, err := response.prepareURL(activity)
+// ReplyToActivity sends reply to an activity.
+func (response *DefaultResponse) ReplyToActivity(conversationID, activityID string, activity schema.Activity) error {
+	url, err := response.prepareReplyToActivityURL(conversationID, activityID, activity.ServiceURL)
 	if err != nil {
 		return err
 	}
 
-	activity = response.prepareActivity(activity)
 	err = response.Client.Post(url, activity)
 	if err != nil {
-		return err
+		errors.Wrap(err, "Failed to send response.")
 	}
 	return nil
 }
 
-func (response *DefaultResponse) prepareActivity(activity schema.Activity) schema.Activity {
-	return schema.Activity{
-		Text:      activity.Text,
-		Type:      activity.Type,
-		From:      activity.Recipient,
-		Recipient: activity.From,
-		ID:        activity.ID,
-	}
+// SendToConversation sends an activity to the end of a conversation.
+func (response *DefaultResponse) SendToConversation(conversationID string, activity schema.Activity) error {
+	// TODO: yet to implement
+	return nil
 }
 
-func (response *DefaultResponse) prepareURL(activity schema.Activity) (url.URL, error) {
-
-	u, err := url.Parse(activity.ServiceURL)
+func (response *DefaultResponse) prepareReplyToActivityURL(conversationID, activityID, serviceURL string) (url.URL, error) {
+	u, err := url.Parse(serviceURL)
 	if err != nil {
-		return *u, err
+		return *u, errors.Wrapf(err, "Failed to parse serviceURL %s.", serviceURL)
 	}
 
-	r := strings.NewReplacer("{conversationId}", activity.Conversation.ID,
-		"{activityId}", activity.ID)
+	r := strings.NewReplacer("{conversationId}", conversationID,
+		"{activityId}", activityID)
 
 	u.Path = path.Join(u.Path, r.Replace(replyToAcitivityURL))
 

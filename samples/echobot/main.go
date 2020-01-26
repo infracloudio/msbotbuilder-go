@@ -14,9 +14,7 @@ import (
 
 var customHandler = activity.HandlerFuncs{
 	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
-		activity := turn.Activity
-		activity.Text = "Echo: " + activity.Text
-		return turn.TextMessage(activity), nil
+		return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
 	},
 }
 

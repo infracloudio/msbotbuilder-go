@@ -76,7 +76,7 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 
 	connectorClient, err := client.NewClient(clientConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to create Connector Client.")
 	}
 
 	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator(), connectorClient}, nil
@@ -92,12 +92,12 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 
 	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to create Activity context.")
 	}
 
 	response, err := activity.NewActivityResponse(bf.Client)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to create response object.")
 	}
 
 	return response.SendActivity(replyActivity)
@@ -130,5 +130,5 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 
 	_, err := bf.TokenValidator.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
-	return err
+	return errors.Wrap(err, "Authentication failed.")
 }
