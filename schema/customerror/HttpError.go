@@ -33,7 +33,11 @@ type HTTPError struct {
 }
 
 func (htErr HTTPError) Error() string {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(htErr.Body)
-	return fmt.Sprintf("HTTP error %d: %s %s", htErr.StatusCode, htErr.HtErr, buf.String())
+	msg := fmt.Sprintf("HTTP error %d: %s.", htErr.StatusCode, htErr.HtErr)
+	if htErr.Body != nil {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(htErr.Body)
+		msg += fmt.Sprintf("%s.", buf.String())
+	}
+	return msg
 }

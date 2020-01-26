@@ -90,8 +90,7 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 	allowedResp := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted}
 	if err != nil {
 		return customerror.HTTPError{
-			StatusCode: resp.StatusCode,
-			HtErr:      err,
+			HtErr: err,
 		}
 	}
 	defer resp.Body.Close()
@@ -104,7 +103,9 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 	}
 
 	return customerror.HTTPError{
+		HtErr:      errors.New("invalid response"),
 		StatusCode: resp.StatusCode,
+		Body:       resp.Body,
 	}
 }
 

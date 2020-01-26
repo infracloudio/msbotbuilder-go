@@ -20,9 +20,9 @@
 package activity
 
 import (
+	"fmt"
 	"net/url"
 	"path"
-	"strings"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/schema"
@@ -34,7 +34,10 @@ type Response interface {
 	SendActivity(activity schema.Activity) error
 }
 
-const replyToAcitivityURL = "v3/conversations/{conversationId}/activities/{activityId}"
+const (
+	sendToConversationURL = "/v3/conversations/%s/activities"
+	replyToActivityURL    = "/v3/conversations/%s/activities/%s"
+)
 
 // DefaultResponse is the default implementation of Response.
 type DefaultResponse struct {
@@ -43,44 +46,22 @@ type DefaultResponse struct {
 
 // SendActivity sends an activity to the BOT connector service.
 func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
+	u, err := url.Parse(activity.ServiceURL)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
+	}
+
+	respPath := fmt.Sprintf(sendToConversationURL, activity.Conversation.ID)
+
+	// if ReplyToID is set in the activity, we send reply to that particular activity
 	if activity.ReplyToID != "" {
-		return response.ReplyToActivity(activity.Conversation.ID, activity.ReplyToID, activity)
-	}
-	return response.SendToConversation(activity.Conversation.ID, activity)
-}
-
-// ReplyToActivity sends reply to an activity.
-func (response *DefaultResponse) ReplyToActivity(conversationID, activityID string, activity schema.Activity) error {
-	url, err := response.prepareReplyToActivityURL(conversationID, activityID, activity.ServiceURL)
-	if err != nil {
-		return err
+		respPath = fmt.Sprintf(replyToActivityURL, activity.Conversation.ID, activity.ID)
 	}
 
-	err = response.Client.Post(url, activity)
-	if err != nil {
-		return errors.Wrap(err, "Failed to send response.")
-	}
-	return nil
-}
-
-// SendToConversation sends an activity to the end of a conversation.
-func (response *DefaultResponse) SendToConversation(conversationID string, activity schema.Activity) error {
-	// TODO: yet to implement
-	return nil
-}
-
-func (response *DefaultResponse) prepareReplyToActivityURL(conversationID, activityID, serviceURL string) (url.URL, error) {
-	u, err := url.Parse(serviceURL)
-	if err != nil {
-		return *u, errors.Wrapf(err, "Failed to parse serviceURL %s.", serviceURL)
-	}
-
-	r := strings.NewReplacer("{conversationId}", conversationID,
-		"{activityId}", activityID)
-
-	u.Path = path.Join(u.Path, r.Replace(replyToAcitivityURL))
-
-	return *u, nil
+	// Send activity to client
+	u.Path = path.Join(u.Path, respPath)
+	err = response.Client.Post(*u, activity)
+	return errors.Wrap(err, "Failed to send response.")
 }
 
 // NewActivityResponse provides a DefaultResponse implementaton of Response.

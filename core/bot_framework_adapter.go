@@ -36,6 +36,7 @@ import (
 type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
+	ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error
 }
 
 // AdapterSetting is the configuration for the Adapter.
@@ -88,6 +89,26 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 
 	turnContext := &activity.TurnContext{
 		Activity: req,
+	}
+
+	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create Activity context.")
+	}
+
+	response, err := activity.NewActivityResponse(bf.Client)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create response object.")
+	}
+
+	return response.SendActivity(replyActivity)
+}
+
+// ProactiveMessage sends activity to a conversation.
+// This methods is used for Bot initiated conversation.
+func (bf *BotFrameworkAdapter) ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error {
+	turnContext := &activity.TurnContext{
+		Activity: activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true),
 	}
 
 	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
