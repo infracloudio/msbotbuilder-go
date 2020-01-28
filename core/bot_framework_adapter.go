@@ -36,6 +36,7 @@ import (
 type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
+	ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error
 }
 
 // AdapterSetting is the configuration for the Adapter.
@@ -76,7 +77,7 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 
 	connectorClient, err := client.NewClient(clientConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Failed to create Connector Client.")
 	}
 
 	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator(), connectorClient}, nil
@@ -92,15 +93,23 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 
 	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to create Activity context.")
 	}
 
 	response, err := activity.NewActivityResponse(bf.Client)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to create response object.")
 	}
 
 	return response.SendActivity(replyActivity)
+}
+
+// ProactiveMessage sends activity to a conversation.
+// This methods is used for Bot initiated conversation.
+func (bf *BotFrameworkAdapter) ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error {
+	// Prepare activity with conversation reference
+	activity := activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true)
+	return bf.ProcessActivity(ctx, activity, handler)
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:
@@ -130,5 +139,5 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 
 	_, err := bf.TokenValidator.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
-	return err
+	return errors.Wrap(err, "Authentication failed.")
 }

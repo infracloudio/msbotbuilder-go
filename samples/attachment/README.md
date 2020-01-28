@@ -1,6 +1,6 @@
-# Bot Framework echo bot sample.
+# Bot Framework attachment sample.
 
-This Microsoft Teams bot uses the [msbotbuilder-go](https://github.com/infracloudio/msbotbuilder-go) library. It shows how to create a simple bot that accepts input from the user and echoes it back.
+This Microsoft Teams bot uses the [msbotbuilder-go](https://github.com/infracloudio/msbotbuilder-go) library. It shows how to create a simple bot that accepts input from the user and echoes response with an attachment.
 
 ## Run the example
 
@@ -49,7 +49,18 @@ This struct contains definition for the `OnMessageFunc` field which is a treated
 ```bash
 var customHandler = activity.HandlerFuncs{
 	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
-		return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
+		var obj map[string]interface{}
+		err := json.Unmarshal(cardJson, &obj)
+		if err != nil {
+			return schema.Activity{}, err
+		}
+		attachments := []schema.Attachment{
+			{
+				ContentType: "application/vnd.microsoft.card.adaptive",
+				Content:     obj,
+			},
+		}
+		return turn.SendActivity(activity.MsgOptionText("Echo: "+turn.Activity.Text), activity.MsgOptionAttachments(attachments))
 	},
 }
 ```

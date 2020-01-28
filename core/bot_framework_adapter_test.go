@@ -48,9 +48,7 @@ func Example() {
 	// Following defines the operation to be performed on the 'message' event.
 	var customHandler = activity.HandlerFuncs{
 		OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
-			activity := turn.Activity
-			activity.Text = "Echo: " + activity.Text
-			return turn.TextMessage(activity), nil
+			return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
 		},
 	}
 

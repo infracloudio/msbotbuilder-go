@@ -16,16 +16,13 @@ Understanding the example
 The program starts by creating a hanlder struct of type `activity.HandlerFuncs`.
 This struct contains defination for the `OnMessageFunc` field which is a treated as a callback by the library
 on the respective event.
-	var customHandler = activity.HandlerFuncs{
-	  OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
-			activity := turn.Activity
-			activity.Text = "Echo: " + activity.Text
-			return turn.TextMessage(activity), nil
-		},
-	  }
 
-The `init` function picks up the APP_ID and APP_PASSWORD methods from the environment session
-and creates an `adapter` using this.
+	var customHandler = activity.HandlerFuncs{
+		OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
+			return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
+		},
+	}
+
 
 A webserver is started with a hanlder passed the received payload to `adapter.ParseRequest`
 This methods authenticates the payload, parses the request and returns an Activity value.

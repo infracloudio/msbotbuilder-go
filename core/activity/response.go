@@ -20,13 +20,13 @@
 package activity
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
 	"path"
-	"strings"
 
 	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/schema"
+	"github.com/pkg/errors"
 )
 
 // Response provides functionalities to send activity to the connector service.
@@ -34,7 +34,13 @@ type Response interface {
 	SendActivity(activity schema.Activity) error
 }
 
-const replyToAcitivityURL = "v3/conversations/{conversationId}/activities/{activityId}"
+const (
+	// APIVersion for response URLs
+	APIVersion = "v3"
+
+	sendToConversationURL = "/%s/conversations/%s/activities"
+	replyToActivityURL    = "/%s/conversations/%s/activities/%s"
+)
 
 // DefaultResponse is the default implementation of Response.
 type DefaultResponse struct {
@@ -43,50 +49,22 @@ type DefaultResponse struct {
 
 // SendActivity sends an activity to the BOT connector service.
 func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
-	if activity.Type == schema.Message {
-		return response.sendTextMessage(activity)
-	}
-
-	return errors.New("No operation for specified Activity type")
-}
-
-func (response *DefaultResponse) sendTextMessage(activity schema.Activity) error {
-	url, err := response.prepareURL(activity)
-	if err != nil {
-		return err
-	}
-
-	activity = response.prepareActivity(activity)
-	err = response.Client.Post(url, activity)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (response *DefaultResponse) prepareActivity(activity schema.Activity) schema.Activity {
-	return schema.Activity{
-		Text:      activity.Text,
-		Type:      activity.Type,
-		From:      activity.Recipient,
-		Recipient: activity.From,
-		ID:        activity.ID,
-	}
-}
-
-func (response *DefaultResponse) prepareURL(activity schema.Activity) (url.URL, error) {
-
 	u, err := url.Parse(activity.ServiceURL)
 	if err != nil {
-		return *u, err
+		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
 	}
 
-	r := strings.NewReplacer("{conversationId}", activity.Conversation.ID,
-		"{activityId}", activity.ID)
+	respPath := fmt.Sprintf(sendToConversationURL, APIVersion, activity.Conversation.ID)
 
-	u.Path = path.Join(u.Path, r.Replace(replyToAcitivityURL))
+	// if ReplyToID is set in the activity, we send reply to that particular activity
+	if activity.ReplyToID != "" {
+		respPath = fmt.Sprintf(replyToActivityURL, APIVersion, activity.Conversation.ID, activity.ID)
+	}
 
-	return *u, nil
+	// Send activity to client
+	u.Path = path.Join(u.Path, respPath)
+	err = response.Client.Post(*u, activity)
+	return errors.Wrap(err, "Failed to send response.")
 }
 
 // NewActivityResponse provides a DefaultResponse implementaton of Response.

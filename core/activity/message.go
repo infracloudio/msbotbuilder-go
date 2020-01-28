@@ -21,32 +21,23 @@ package activity
 
 import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
-	"github.com/pkg/errors"
 )
 
-// TurnContext wraps the Activity received and provides operations for the user
-// program of this SDK.
-//
-// The return value is Activity as provided by the client program, to be send to the connector service.
-type TurnContext struct {
-	Activity schema.Activity
+// MsgOption option provided when sending an activity.
+type MsgOption func(*schema.Activity) error
+
+// MsgOptionText adds text to the activity.
+func MsgOptionText(text string) MsgOption {
+	return func(activity *schema.Activity) error {
+		activity.Text = text
+		return nil
+	}
 }
 
-// SendActivity sends an activity to user.
-// TODO: Change comment
-func (t *TurnContext) SendActivity(options ...MsgOption) (schema.Activity, error) {
-	activity, err := applyMsgOptions(schema.Activity{Type: schema.Message}, options...)
-	if err != nil {
-		return activity, errors.Wrap(err, "Failed to apply MsgOptions.")
+// MsgOptionAttachments adds attachment to the activity.
+func MsgOptionAttachments(attachments []schema.Attachment) MsgOption {
+	return func(activity *schema.Activity) error {
+		activity.Attachments = attachments
+		return nil
 	}
-	return ApplyConversationReference(activity, GetCoversationReference(t.Activity), false), nil
-}
-
-func applyMsgOptions(activity schema.Activity, options ...MsgOption) (schema.Activity, error) {
-	for _, opt := range options {
-		if err := opt(&activity); err != nil {
-			return activity, err
-		}
-	}
-	return activity, nil
 }

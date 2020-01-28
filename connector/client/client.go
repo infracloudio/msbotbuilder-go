@@ -63,7 +63,6 @@ func NewClient(config *Config) (Client, error) {
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
 func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
-
 	token, err := client.getToken()
 	if err != nil {
 		return err
@@ -84,18 +83,29 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) er
 
 	replyClient := &http.Client{}
 
-	resp, err := replyClient.Do(req)
-	if err != nil || resp.StatusCode != http.StatusCreated {
+	return client.checkRespError(replyClient.Do(req))
+}
+
+func (client *ConnectorClient) checkRespError(resp *http.Response, err error) error {
+	allowedResp := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted}
+	if err != nil {
 		return customerror.HTTPError{
-			StatusCode: resp.StatusCode,
-			HtErr:      err,
-			Body:       resp.Body,
+			HtErr: err,
+		}
+	}
+	defer resp.Body.Close()
+
+	// Check if resp allowed
+	for _, code := range allowedResp {
+		if code == resp.StatusCode {
+			return nil
 		}
 	}
 
-	defer resp.Body.Close()
-
-	return nil
+	return customerror.HTTPError{
+		HtErr:      errors.New("invalid response"),
+		StatusCode: resp.StatusCode,
+	}
 }
 
 func (client *ConnectorClient) getToken() (string, error) {
@@ -131,7 +141,6 @@ func (client *ConnectorClient) getToken() (string, error) {
 		return "", customerror.HTTPError{
 			StatusCode: resp.StatusCode,
 			HtErr:      err,
-			Body:       resp.Body,
 		}
 	}
 

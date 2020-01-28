@@ -21,32 +21,37 @@ package activity
 
 import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
-	"github.com/pkg/errors"
 )
 
-// TurnContext wraps the Activity received and provides operations for the user
-// program of this SDK.
-//
-// The return value is Activity as provided by the client program, to be send to the connector service.
-type TurnContext struct {
-	Activity schema.Activity
-}
-
-// SendActivity sends an activity to user.
-// TODO: Change comment
-func (t *TurnContext) SendActivity(options ...MsgOption) (schema.Activity, error) {
-	activity, err := applyMsgOptions(schema.Activity{Type: schema.Message}, options...)
-	if err != nil {
-		return activity, errors.Wrap(err, "Failed to apply MsgOptions.")
+// GetCoversationReference returns conversation reference from the activity
+func GetCoversationReference(activity schema.Activity) schema.ConversationReference {
+	return schema.ConversationReference{
+		ActivityID:   activity.ID,
+		User:         activity.From,
+		Bot:          activity.Recipient,
+		Conversation: activity.Conversation,
+		ChannelID:    activity.ChannelID,
+		ServiceURL:   activity.ServiceURL,
 	}
-	return ApplyConversationReference(activity, GetCoversationReference(t.Activity), false), nil
 }
 
-func applyMsgOptions(activity schema.Activity, options ...MsgOption) (schema.Activity, error) {
-	for _, opt := range options {
-		if err := opt(&activity); err != nil {
-			return activity, err
+// ApplyConversationReference sets delivery information to the activity from conversation reference
+func ApplyConversationReference(activity schema.Activity, reference schema.ConversationReference, isIncoming bool) schema.Activity {
+	activity.ChannelID = reference.ChannelID
+	activity.ServiceURL = reference.ServiceURL
+	activity.Conversation = reference.Conversation
+	if isIncoming {
+		activity.From = reference.User
+		activity.Recipient = reference.Bot
+		if reference.ActivityID != "" {
+			activity.ID = reference.ActivityID
 		}
+		return activity
 	}
-	return activity, nil
+	activity.From = reference.Bot
+	activity.Recipient = reference.User
+	if reference.ActivityID != "" {
+		activity.ReplyToID = reference.ActivityID
+	}
+	return activity
 }
