@@ -35,8 +35,11 @@ type Response interface {
 }
 
 const (
-	sendToConversationURL = "/v3/conversations/%s/activities"
-	replyToActivityURL    = "/v3/conversations/%s/activities/%s"
+	// APIVersion for response URLs
+	APIVersion = "v3"
+
+	sendToConversationURL = "/%s/conversations/%s/activities"
+	replyToActivityURL    = "/%s/conversations/%s/activities/%s"
 )
 
 // DefaultResponse is the default implementation of Response.
@@ -51,11 +54,11 @@ func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
 		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
 	}
 
-	respPath := fmt.Sprintf(sendToConversationURL, activity.Conversation.ID)
+	respPath := fmt.Sprintf(sendToConversationURL, APIVersion, activity.Conversation.ID)
 
 	// if ReplyToID is set in the activity, we send reply to that particular activity
 	if activity.ReplyToID != "" {
-		respPath = fmt.Sprintf(replyToActivityURL, activity.Conversation.ID, activity.ID)
+		respPath = fmt.Sprintf(replyToActivityURL, APIVersion, activity.Conversation.ID, activity.ID)
 	}
 
 	// Send activity to client

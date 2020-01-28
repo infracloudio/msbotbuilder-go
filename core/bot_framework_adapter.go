@@ -107,21 +107,9 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 // ProactiveMessage sends activity to a conversation.
 // This methods is used for Bot initiated conversation.
 func (bf *BotFrameworkAdapter) ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error {
-	turnContext := &activity.TurnContext{
-		Activity: activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true),
-	}
-
-	replyActivity, err := activity.PrepareActivityContext(handler, turnContext)
-	if err != nil {
-		return errors.Wrap(err, "Failed to create Activity context.")
-	}
-
-	response, err := activity.NewActivityResponse(bf.Client)
-	if err != nil {
-		return errors.Wrap(err, "Failed to create response object.")
-	}
-
-	return response.SendActivity(replyActivity)
+	// Prepare activity with conversation reference
+	activity := activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true)
+	return bf.ProcessActivity(ctx, activity, handler)
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:

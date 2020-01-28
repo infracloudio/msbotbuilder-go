@@ -105,7 +105,6 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 	return customerror.HTTPError{
 		HtErr:      errors.New("invalid response"),
 		StatusCode: resp.StatusCode,
-		Body:       resp.Body,
 	}
 }
 
@@ -142,7 +141,6 @@ func (client *ConnectorClient) getToken() (string, error) {
 		return "", customerror.HTTPError{
 			StatusCode: resp.StatusCode,
 			HtErr:      err,
-			Body:       resp.Body,
 		}
 	}
 

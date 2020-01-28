@@ -19,25 +19,14 @@
 
 package customerror
 
-import (
-	"bytes"
-	"fmt"
-	"io"
-)
+import "fmt"
 
 // HTTPError wraps a raw HTTP error
 type HTTPError struct {
 	StatusCode int
 	HtErr      error
-	Body       io.ReadCloser
 }
 
 func (htErr HTTPError) Error() string {
-	msg := fmt.Sprintf("HTTP error %d: %s.", htErr.StatusCode, htErr.HtErr)
-	if htErr.Body != nil {
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(htErr.Body)
-		msg += fmt.Sprintf("%s.", buf.String())
-	}
-	return msg
+	return fmt.Sprintf("HTTP error %d: %s.", htErr.StatusCode, htErr.HtErr)
 }
