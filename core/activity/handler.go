@@ -21,12 +21,15 @@ package activity
 
 import (
 	"errors"
+	"fmt"
+
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
 // Handler acts as the interface for the client program to define actions on various events from connector service.
 type Handler interface {
 	OnMessage(context *TurnContext) (schema.Activity, error)
+	OnInvoke(context *TurnContext) (schema.Activity, error)
 }
 
 // HandlerFuncs is an adaptor to let client program specify as many or
@@ -34,6 +37,7 @@ type Handler interface {
 // Handler.
 type HandlerFuncs struct {
 	OnMessageFunc func(turn *TurnContext) (schema.Activity, error)
+	OnInvokeFunc  func(turn *TurnContext) (schema.Activity, error)
 }
 
 // OnMessage handles a 'message' event from connector service.
@@ -44,15 +48,26 @@ func (r HandlerFuncs) OnMessage(turn *TurnContext) (schema.Activity, error) {
 	return schema.Activity{}, errors.New("No handler found for this activity type")
 }
 
+// OnInvoke handles a 'invoke' event from connector service.
+func (r HandlerFuncs) OnInvoke(turn *TurnContext) (schema.Activity, error) {
+	if r.OnInvokeFunc != nil {
+		return r.OnInvokeFunc(turn)
+	}
+	return schema.Activity{}, errors.New("No handler found for this activity type")
+}
+
 // PrepareActivityContext routes the received Activity to respective handler function.
 // Returns the result of the handler function.
 func PrepareActivityContext(handler Handler, context *TurnContext) (schema.Activity, error) {
-	if context.Activity.Type == schema.Message {
-		activity, err := handler.OnMessage(context)
-		if err != nil {
-			return schema.Activity{}, err
-		}
-		return activity, nil
+	var activity schema.Activity
+	var err error
+	switch context.Activity.Type {
+	case schema.Message:
+		activity, err = handler.OnMessage(context)
+	case schema.Invoke:
+		activity, err = handler.OnInvoke(context)
+	default:
+		return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
 	}
-	return schema.Activity{}, errors.New("Malformed Activity : Type not recognized")
+	return activity, err
 }
