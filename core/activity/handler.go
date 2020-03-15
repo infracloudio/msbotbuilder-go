@@ -59,15 +59,11 @@ func (r HandlerFuncs) OnInvoke(turn *TurnContext) (schema.Activity, error) {
 // PrepareActivityContext routes the received Activity to respective handler function.
 // Returns the result of the handler function.
 func PrepareActivityContext(handler Handler, context *TurnContext) (schema.Activity, error) {
-	var activity schema.Activity
-	var err error
 	switch context.Activity.Type {
 	case schema.Message:
-		activity, err = handler.OnMessage(context)
+		return handler.OnMessage(context)
 	case schema.Invoke:
-		activity, err = handler.OnInvoke(context)
-	default:
-		return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
+		return handler.OnInvoke(context)
 	}
-	return activity, err
+	return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
 }
