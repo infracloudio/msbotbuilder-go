@@ -39,6 +39,7 @@ import (
 // Client provides interface to send requests to the connector service.
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
+	Delete(url url.URL, activity schema.Activity) error
 }
 
 // ConnectorClient implements Client to send HTTP requests to the connector service.
@@ -50,7 +51,6 @@ type ConnectorClient struct {
 // NewClient constructs and returns a new ConnectorClient with provided configuration and an empty cache.
 // Returns error if Config passed is nil.
 func NewClient(config *Config) (Client, error) {
-
 	if config == nil {
 		return nil, errors.New("Invalid client configuration")
 	}
@@ -58,22 +58,37 @@ func NewClient(config *Config) (Client, error) {
 	return &ConnectorClient{*config, cache.AuthCache{}}, nil
 }
 
-// Post a activity to given URL.
+// Post an activity to given URL.
 //
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
 func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
-	token, err := client.getToken()
-	if err != nil {
-		return err
-	}
-
 	jsonStr, err := json.Marshal(activity)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", target.String(), bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest(http.MethodPost, target.String(), bytes.NewBuffer(jsonStr))
+	if err != nil {
+		return err
+	}
+	return client.sendRequest(req, activity)
+}
+
+// Delete an activity.
+//
+// Creates a HTTP DELETE request with the provided activity ID and a Bearer token in the header.
+// Returns any error as received from the call to connector service.
+func (client *ConnectorClient) Delete(target url.URL, activity schema.Activity) error {
+	req, err := http.NewRequest(http.MethodDelete, target.String(), nil)
+	if err != nil {
+		return err
+	}
+	return client.sendRequest(req, activity)
+}
+
+func (client *ConnectorClient) sendRequest(req *http.Request, activity schema.Activity) error {
+	token, err := client.getToken()
 	if err != nil {
 		return err
 	}

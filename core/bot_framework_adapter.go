@@ -37,6 +37,7 @@ type Adapter interface {
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 	ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error
+	DeleteActivity(ctx context.Context, activityID string, ref schema.ConversationReference) error
 }
 
 // AdapterSetting is the configuration for the Adapter.
@@ -86,7 +87,6 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
 // sends it to the connector service.
 func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error {
-
 	turnContext := &activity.TurnContext{
 		Activity: req,
 	}
@@ -110,6 +110,20 @@ func (bf *BotFrameworkAdapter) ProactiveMessage(ctx context.Context, ref schema.
 	// Prepare activity with conversation reference
 	activity := activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true)
 	return bf.ProcessActivity(ctx, activity, handler)
+}
+
+// DeleteActivity Deletes an existing activity by Activity ID
+func (bf *BotFrameworkAdapter) DeleteActivity(ctx context.Context, activityID string, ref schema.ConversationReference) error {
+	// Prepare activity with conversation reference
+	req := activity.ApplyConversationReference(schema.Activity{Type: schema.Message}, ref, true)
+	req.ID = activityID
+
+	response, err := activity.NewActivityResponse(bf.Client)
+	if err != nil {
+		return errors.Wrap(err, "Failed to create response object.")
+	}
+
+	return response.DeleteActivity(req)
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:
