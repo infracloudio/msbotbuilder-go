@@ -16,6 +16,9 @@ import (
 	"github.com/infracloudio/msbotbuilder-go/schema"
 )
 
+var invokeCardRef schema.ConversationReference
+var consents chan string
+
 var customHandler = activity.HandlerFuncs{
 	// handle message events
 	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
@@ -40,6 +43,7 @@ var customHandler = activity.HandlerFuncs{
 	// handle invoke events
 	// https://developer.microsoft.com/en-us/microsoft-teams/blogs/working-with-files-in-your-microsoft-teams-bot/
 	OnInvokeFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
+		pushProcessedConsent(turn.Activity.ReplyToID)
 		data, err := ioutil.ReadFile("data.txt")
 		if err != nil {
 			return schema.Activity{}, fmt.Errorf("failed to read file: %s", err.Error())
@@ -109,6 +113,27 @@ func putRequest(u string, data []byte) error {
 	return nil
 }
 
+func pushProcessedConsent(ID string) {
+	select {
+	case consents <- ID:
+		break
+	default:
+		// Remove older ID if buffer is full
+		<-consents
+		consents <- ID
+	}
+}
+
+func (ht *HTTPHandler) cleanupConsents() {
+	for {
+		ID := <-consents
+		fmt.Printf("Deleting activity %s\n", ID)
+		if err := ht.DeleteActivity(context.TODO(), ID, invokeCardRef); err != nil {
+			log.Printf("Failed to delete activity. %s", err.Error())
+		}
+	}
+}
+
 // HTTPHandler handles the HTTP requests from then connector service
 type HTTPHandler struct {
 	core.Adapter
@@ -116,14 +141,19 @@ type HTTPHandler struct {
 
 func (ht *HTTPHandler) processMessage(w http.ResponseWriter, req *http.Request) {
 	ctx := context.Background()
-	activity, err := ht.Adapter.ParseRequest(ctx, req)
+	act, err := ht.Adapter.ParseRequest(ctx, req)
 	if err != nil {
 		fmt.Println("Failed to parse request.", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = ht.Adapter.ProcessActivity(ctx, activity, customHandler)
+	aj, _ := json.MarshalIndent(act, "", "  ")
+	fmt.Printf("Incoming Activity:: \n%s\n", aj)
+
+	invokeCardRef = activity.GetCoversationReference(act)
+
+	err = ht.Adapter.ProcessActivity(ctx, act, customHandler)
 	if err != nil {
 		fmt.Println("Failed to process request.", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -133,6 +163,7 @@ func (ht *HTTPHandler) processMessage(w http.ResponseWriter, req *http.Request) 
 }
 
 func main() {
+	consents = make(chan string, 10)
 	setting := core.AdapterSetting{
 		AppID:       os.Getenv("APP_ID"),
 		AppPassword: os.Getenv("APP_PASSWORD"),
@@ -144,6 +175,8 @@ func main() {
 	}
 
 	httpHandler := &HTTPHandler{adapter}
+
+	go httpHandler.cleanupConsents()
 
 	http.HandleFunc("/api/messages", httpHandler.processMessage)
 	fmt.Println("Starting server on port:3978...")
