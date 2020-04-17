@@ -32,6 +32,7 @@ import (
 // Response provides functionalities to send activity to the connector service.
 type Response interface {
 	SendActivity(activity schema.Activity) error
+	DeleteActivity(activity schema.Activity) error
 }
 
 const (
@@ -40,11 +41,27 @@ const (
 
 	sendToConversationURL = "/%s/conversations/%s/activities"
 	replyToActivityURL    = "/%s/conversations/%s/activities/%s"
+	deleteActivityURL     = "/%s/conversations/%s/activities/%s"
 )
 
 // DefaultResponse is the default implementation of Response.
 type DefaultResponse struct {
 	Client client.Client
+}
+
+// DeleteActivity sends a Delete activity method to the BOT connector service.
+func (response *DefaultResponse) DeleteActivity(activity schema.Activity) error {
+	u, err := url.Parse(activity.ServiceURL)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
+	}
+
+	respPath := fmt.Sprintf(deleteActivityURL, APIVersion, activity.Conversation.ID, activity.ID)
+
+	// Send activity to client
+	u.Path = path.Join(u.Path, respPath)
+	err = response.Client.Delete(*u, activity)
+	return errors.Wrap(err, "Failed to delete response.")
 }
 
 // SendActivity sends an activity to the BOT connector service.

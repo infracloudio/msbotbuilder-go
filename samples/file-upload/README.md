@@ -10,6 +10,8 @@ As documented [here](https://developer.microsoft.com/en-us/microsoft-teams/blogs
     When the user presses either “Allow” or “Decline”, your bot will receive an invoke activity.
 3. **Handle invoke activity**
     If the file was accepted, activity value contains an uploadInfo property. To set the file contents, issue PUT requests to the URL in uploadInfo.uploadUrl as described [here](https://docs.microsoft.com/en-us/onedrive/developer/rest-api/api/driveitem_createuploadsession?view=odsp-graph-online#upload-bytes-to-the-upload-session)
+4. **Delete consent card**
+    Once user responds to file upload request, the `consent card` is deleted.
 4. **Send the user a link to the uploaded file**
     After you finish the upload, send a link to the file with file `info card`.
 
@@ -64,6 +66,7 @@ This example contains following handlers:
 
 The `init` function picks up the `APP_ID` and `APP_PASSWORD` from the environment session and creates an `adapter` using this.
 
+The consent cleanup `cleanupConsents()` is started as a go routine to delete processed consent cards.
 
 A webserver is started with a handler which passes the received payload to `adapter.ParseRequest`. This methods authenticates the payload, parses the request and returns an Activity value.
 
