@@ -30,20 +30,30 @@ import (
 type Handler interface {
 	OnMessage(context *TurnContext) (schema.Activity, error)
 	OnInvoke(context *TurnContext) (schema.Activity, error)
+	OnConversationUpdate(context *TurnContext) (schema.Activity, error)
 }
 
 // HandlerFuncs is an adaptor to let client program specify as many or
 // as few functions to handle events of the connector service while still implementing
 // Handler.
 type HandlerFuncs struct {
-	OnMessageFunc func(turn *TurnContext) (schema.Activity, error)
-	OnInvokeFunc  func(turn *TurnContext) (schema.Activity, error)
+	OnMessageFunc            func(turn *TurnContext) (schema.Activity, error)
+	OnInvokeFunc             func(turn *TurnContext) (schema.Activity, error)
+	OnConversationUpdateFunc func(turn *TurnContext) (schema.Activity, error)
 }
 
 // OnMessage handles a 'message' event from connector service.
 func (r HandlerFuncs) OnMessage(turn *TurnContext) (schema.Activity, error) {
 	if r.OnMessageFunc != nil {
 		return r.OnMessageFunc(turn)
+	}
+	return schema.Activity{}, errors.New("No handler found for this activity type")
+}
+
+// OnConversationUpdate handles a 'conversationUpdate' event from connector service.
+func (r HandlerFuncs) OnConversationUpdate(turn *TurnContext) (schema.Activity, error) {
+	if r.OnConversationUpdateFunc != nil {
+		return r.OnConversationUpdate(turn)
 	}
 	return schema.Activity{}, errors.New("No handler found for this activity type")
 }
@@ -64,6 +74,8 @@ func PrepareActivityContext(handler Handler, context *TurnContext) (schema.Activ
 		return handler.OnMessage(context)
 	case schema.Invoke:
 		return handler.OnInvoke(context)
+	case schema.ConversationUpdate:
+		return handler.OnConversationUpdate(context)
 	}
 	return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
 }
