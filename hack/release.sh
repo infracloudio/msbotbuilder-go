@@ -40,7 +40,7 @@ generate_changelog() {
     local version=$1
 
     # generate changelog from github
-    github_changelog_generator infracloudio/msbotbuilder-go -t ${GITHUB_TOKEN} --future-release ${version} -o CHANGELOG.md
+    github_changelog_generator -u infracloudio -p msbotbuilder-go -t ${GITHUB_TOKEN} --future-release ${version} -o CHANGELOG.md
     sed -i '$d' CHANGELOG.md
 }
 
