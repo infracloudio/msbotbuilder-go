@@ -1,6 +1,23 @@
-# Change Log
+# Changelog
+
+## [v0.2.1](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.1) (2020-07-26)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.0...v0.2.1)
+
+**Closed issues:**
+
+- 404 Not Found [\#44](https://github.com/infracloudio/msbotbuilder-go/issues/44)
+- Add support to Delete activity [\#34](https://github.com/infracloudio/msbotbuilder-go/issues/34)
+- Realese 0.1.1 [\#29](https://github.com/infracloudio/msbotbuilder-go/issues/29)
+
+**Merged pull requests:**
+
+- Use github\_changelog\_generator 1.15.2 for release [\#45](https://github.com/infracloudio/msbotbuilder-go/pull/45) ([PrasadG193](https://github.com/PrasadG193))
+- Added conversation update activity handler [\#42](https://github.com/infracloudio/msbotbuilder-go/pull/42) ([PrasadG193](https://github.com/PrasadG193))
+- Add support to Delete Activity by ID [\#37](https://github.com/infracloudio/msbotbuilder-go/pull/37) ([PrasadG193](https://github.com/PrasadG193))
 
 ## [v0.2.0](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.0) (2020-03-15)
+
 [Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.1.0...v0.2.0)
 
 **Closed issues:**
@@ -17,14 +34,17 @@
 
 - Add invoke activity handler to support file upload [\#32](https://github.com/infracloudio/msbotbuilder-go/pull/32) ([PrasadG193](https://github.com/PrasadG193))
 - Add sample for sending proactive messages [\#31](https://github.com/infracloudio/msbotbuilder-go/pull/31) ([PrasadG193](https://github.com/PrasadG193))
+- Add support for proactive messages [\#27](https://github.com/infracloudio/msbotbuilder-go/pull/27) ([PrasadG193](https://github.com/PrasadG193))
 - add package cache [\#24](https://github.com/infracloudio/msbotbuilder-go/pull/24) ([sahil-lakhwani](https://github.com/sahil-lakhwani))
 - Add license headers [\#21](https://github.com/infracloudio/msbotbuilder-go/pull/21) ([PrasadG193](https://github.com/PrasadG193))
 - Add godoc reference badge in README [\#18](https://github.com/infracloudio/msbotbuilder-go/pull/18) ([PrasadG193](https://github.com/PrasadG193))
 
 ## [v0.1.0](https://github.com/infracloudio/msbotbuilder-go/tree/v0.1.0) (2020-01-15)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/d2be6786149857b350c968db943256a460bd8487...v0.1.0)
+
 **Merged pull requests:**
 
-- Add support for proactive messages [\#27](https://github.com/infracloudio/msbotbuilder-go/pull/27) ([PrasadG193](https://github.com/PrasadG193))
 - Add release script [\#17](https://github.com/infracloudio/msbotbuilder-go/pull/17) ([PrasadG193](https://github.com/PrasadG193))
 - Address go vet complaints [\#16](https://github.com/infracloudio/msbotbuilder-go/pull/16) ([sahil-lakhwani](https://github.com/sahil-lakhwani))
 - Add CI checks [\#15](https://github.com/infracloudio/msbotbuilder-go/pull/15) ([PrasadG193](https://github.com/PrasadG193))
@@ -35,7 +55,6 @@
 - Add interfaces for components [\#5](https://github.com/infracloudio/msbotbuilder-go/pull/5) ([PrasadG193](https://github.com/PrasadG193))
 - Fix token validation issue [\#3](https://github.com/infracloudio/msbotbuilder-go/pull/3) ([PrasadG193](https://github.com/PrasadG193))
 - Merge develop to master [\#2](https://github.com/infracloudio/msbotbuilder-go/pull/2) ([PrasadG193](https://github.com/PrasadG193))
-- Authenticate requests from connector to bot [\#1](https://github.com/infracloudio/msbotbuilder-go/pull/1) ([sahil-lakhwani](https://github.com/sahil-lakhwani))
 
 
 
