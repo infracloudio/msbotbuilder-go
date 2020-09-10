@@ -24,15 +24,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
+	"github.com/infracloudio/msbotbuilder-go/connector/auth"
+	"github.com/infracloudio/msbotbuilder-go/connector/client"
 	"github.com/infracloudio/msbotbuilder-go/core"
 	"github.com/infracloudio/msbotbuilder-go/core/activity"
 	"github.com/infracloudio/msbotbuilder-go/schema"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,34 +58,8 @@ var customHandler = activity.HandlerFuncs{
 	},
 }
 
-func processMessage(w http.ResponseWriter, req *http.Request) {
-	ctx := context.Background()
-	setting := core.AdapterSetting{
-		AppID:       "asdasd",
-		AppPassword: "cfg.MicrosoftTeams.AppPassword",
-	}
-	adapter, err := core.NewBotAdapter(setting)
-	act, err := adapter.ParseRequest(ctx, req)
-	err = adapter.ProcessActivity(ctx, act, customHandler)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-}
 func TestExample(t *testing.T) {
 	srv := serverMock()
-	// Load settings from environment variables to AdapterSetting.
-	setting := core.AdapterSetting{
-		AppID:       os.Getenv("APP_ID"),
-		AppPassword: os.Getenv("APP_PASSWORD"),
-	}
-
-	// Make an adapter to perform operations with the Bot Framework using this library.
-	adapter, err := core.NewBotAdapter(setting)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// activity depicts a request as received from a client
 	activity := schema.Activity{
 		Type: schema.Message,
@@ -105,17 +80,32 @@ func TestExample(t *testing.T) {
 		ServiceURL: srv.URL,
 	}
 
-	// Pass the activity and handler to the adapter for proecssing
-	ctx := context.Background()
-	err = adapter.ProcessActivity(ctx, activity, customHandler)
-	if err != nil {
-		fmt.Println("Failed to process request", err)
-	}
-	handler := http.HandlerFunc(processMessage)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		ctx := context.Background()
+		setting := core.AdapterSetting{
+			AppID:       "asdasd",
+			AppPassword: "cfg.MicrosoftTeams.AppPassword",
+		}
+		setting.CredentialProvider = auth.SimpleCredentialProvider{
+			AppID:    setting.AppID,
+			Password: setting.AppPassword,
+		}
+		clientConfig, err := client.NewClientConfig(setting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+		connectorClient, err := client.NewClient(clientConfig)
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+		adapter := core.BotFrameworkAdapter{setting, &core.MockTokenValidator{}, connectorClient}
+		act, err := adapter.ParseRequest(ctx, req)
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+		err = adapter.ProcessActivity(ctx, act, customHandler)
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+	})
 	rr := httptest.NewRecorder()
-	bodyJson, _ := json.Marshal(activity)
-	bodyBytes := bytes.NewReader(bodyJson)
-	req, _ := http.NewRequest(http.MethodPost, "/api/messages", bodyBytes)
+	bodyJSON, err := json.Marshal(activity)
+	assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+	bodyBytes := bytes.NewReader(bodyJSON)
+	req, err := http.NewRequest(http.MethodPost, "/api/messages", bodyBytes)
+	assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
 	req.Header.Set("Authorization", "Bearer abc123")
 	handler.ServeHTTP(rr, req)
 	assert.Equal(t, rr.Code, 200, "Expect 200 response status")
