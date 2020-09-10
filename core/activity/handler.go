@@ -53,7 +53,7 @@ func (r HandlerFuncs) OnMessage(turn *TurnContext) (schema.Activity, error) {
 // OnConversationUpdate handles a 'conversationUpdate' event from connector service.
 func (r HandlerFuncs) OnConversationUpdate(turn *TurnContext) (schema.Activity, error) {
 	if r.OnConversationUpdateFunc != nil {
-		return r.OnConversationUpdate(turn)
+		return r.OnConversationUpdateFunc(turn)
 	}
 	return schema.Activity{}, errors.New("No handler found for this activity type")
 }
