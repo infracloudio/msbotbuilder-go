@@ -20,18 +20,59 @@
 package core_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"testing"
 
 	"github.com/infracloudio/msbotbuilder-go/core"
 	"github.com/infracloudio/msbotbuilder-go/core/activity"
 	"github.com/infracloudio/msbotbuilder-go/schema"
+	"github.com/stretchr/testify/assert"
 )
 
-func Example() {
+func serverMock() *httptest.Server {
+	handler := http.NewServeMux()
+	handler.HandleFunc("/v3/conversations/abcd1234/activities", msTeamsMockMock)
 
+	srv := httptest.NewServer(handler)
+
+	return srv
+}
+
+func msTeamsMockMock(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("{\"id\":\"1\"}"))
+}
+
+// Create a handler that defines operations to be performed on respective events.
+// Following defines the operation to be performed on the 'message' event.
+var customHandler = activity.HandlerFuncs{
+	OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
+		return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
+	},
+}
+
+func processMessage(w http.ResponseWriter, req *http.Request) {
+	ctx := context.Background()
+	setting := core.AdapterSetting{
+		AppID:       "asdasd",
+		AppPassword: "cfg.MicrosoftTeams.AppPassword",
+	}
+	adapter, err := core.NewBotAdapter(setting)
+	act, err := adapter.ParseRequest(ctx, req)
+	err = adapter.ProcessActivity(ctx, act, customHandler)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+}
+func TestExample(t *testing.T) {
+	srv := serverMock()
 	// Load settings from environment variables to AdapterSetting.
 	setting := core.AdapterSetting{
 		AppID:       os.Getenv("APP_ID"),
@@ -42,14 +83,6 @@ func Example() {
 	adapter, err := core.NewBotAdapter(setting)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	// Create a handler that defines operations to be performed on respective events.
-	// Following defines the operation to be performed on the 'message' event.
-	var customHandler = activity.HandlerFuncs{
-		OnMessageFunc: func(turn *activity.TurnContext) (schema.Activity, error) {
-			return turn.SendActivity(activity.MsgOptionText("Echo: " + turn.Activity.Text))
-		},
 	}
 
 	// activity depicts a request as received from a client
@@ -67,8 +100,9 @@ func Example() {
 			ID:   "1234abcd",
 			Name: "SteveW",
 		},
-		Text:      "Message from Teams Client",
-		ReplyToID: "5d5cdc723",
+		Text:       "Message from Teams Client",
+		ReplyToID:  "5d5cdc723",
+		ServiceURL: srv.URL,
 	}
 
 	// Pass the activity and handler to the adapter for proecssing
@@ -76,6 +110,13 @@ func Example() {
 	err = adapter.ProcessActivity(ctx, activity, customHandler)
 	if err != nil {
 		fmt.Println("Failed to process request", err)
-		return
 	}
+	handler := http.HandlerFunc(processMessage)
+	rr := httptest.NewRecorder()
+	bodyJson, _ := json.Marshal(activity)
+	bodyBytes := bytes.NewReader(bodyJson)
+	req, _ := http.NewRequest(http.MethodPost, "/api/messages", bodyBytes)
+	req.Header.Set("Authorization", "Bearer abc123")
+	handler.ServeHTTP(rr, req)
+	assert.Equal(t, rr.Code, 200, "Expect 200 response status")
 }
