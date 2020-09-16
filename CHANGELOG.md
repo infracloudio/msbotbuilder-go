@@ -1,5 +1,19 @@
 # Changelog
 
+## [v0.2.2](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.2) (2020-09-16)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.1...v0.2.2)
+
+**Closed issues:**
+
+- Conversation update activity handler failing with infinite loop [\#47](https://github.com/infracloudio/msbotbuilder-go/issues/47)
+- Need a way to mock authentication [\#46](https://github.com/infracloudio/msbotbuilder-go/issues/46)
+
+**Merged pull requests:**
+
+- Added test case with mock server [\#49](https://github.com/infracloudio/msbotbuilder-go/pull/49) ([coupa-sbawaskar](https://github.com/coupa-sbawaskar))
+- Fixed conversation update activity handler failing with infinite loop \#47 [\#48](https://github.com/infracloudio/msbotbuilder-go/pull/48) ([coupa-sbawaskar](https://github.com/coupa-sbawaskar))
+
 ## [v0.2.1](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.1) (2020-07-26)
 
 [Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.0...v0.2.1)
