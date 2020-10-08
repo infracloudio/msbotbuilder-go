@@ -37,16 +37,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func serverMock() *httptest.Server {
+func serverMock(t *testing.T) *httptest.Server {
 	handler := http.NewServeMux()
 	handler.HandleFunc("/v3/conversations/abcd1234/activities", msTeamsMockMock)
-
+	h1 := &msTeamsActivityUpdateMock{t: t}
+	handler.Handle("/v3/conversations/TestActivityUpdate/activities", h1)
 	srv := httptest.NewServer(handler)
 
 	return srv
 }
 
 func msTeamsMockMock(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("{\"id\":\"1\"}"))
+}
+
+type msTeamsActivityUpdateMock struct {
+	t *testing.T
+}
+
+func (th *msTeamsActivityUpdateMock) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	assert.Equal(th.t, "PUT", r.Method, "Expect PUT method")
+	activity := schema.Activity{}
+	err := json.NewDecoder(r.Body).Decode(&activity)
+	assert.Equal(th.t, "TestLabel", activity.Label, "Expect PUT method")
+	assert.Nil(th.t, err, fmt.Sprintf("Failed with error %s", err))
 	_, _ = w.Write([]byte("{\"id\":\"1\"}"))
 }
 
@@ -59,7 +73,7 @@ var customHandler = activity.HandlerFuncs{
 }
 
 func TestExample(t *testing.T) {
-	srv := serverMock()
+	srv := serverMock(t)
 	// activity depicts a request as received from a client
 	activity := schema.Activity{
 		Type: schema.Message,
@@ -98,6 +112,59 @@ func TestExample(t *testing.T) {
 		act, err := adapter.ParseRequest(ctx, req)
 		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
 		err = adapter.ProcessActivity(ctx, act, customHandler)
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+	})
+	rr := httptest.NewRecorder()
+	bodyJSON, err := json.Marshal(activity)
+	assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+	bodyBytes := bytes.NewReader(bodyJSON)
+	req, err := http.NewRequest(http.MethodPost, "/api/messages", bodyBytes)
+	assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+	req.Header.Set("Authorization", "Bearer abc123")
+	handler.ServeHTTP(rr, req)
+	assert.Equal(t, rr.Code, 200, "Expect 200 response status")
+}
+
+func TestActivityUpdate(t *testing.T) {
+	srv := serverMock(t)
+
+	activity := schema.Activity{
+		Type: schema.Message,
+		From: schema.ChannelAccount{
+			ID:   "12345678",
+			Name: "Pepper's News Feed",
+		},
+		Conversation: schema.ConversationAccount{
+			ID:   "TestActivityUpdate",
+			Name: "Convo1",
+		},
+		Recipient: schema.ChannelAccount{
+			ID:   "1234abcd",
+			Name: "SteveW",
+		},
+		Text:       "Message from Teams Client",
+		ReplyToID:  "5d5cdc723",
+		ServiceURL: srv.URL,
+	}
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		ctx := context.Background()
+		setting := core.AdapterSetting{
+			AppID:       "asdasd",
+			AppPassword: "cfg.MicrosoftTeams.AppPassword",
+		}
+		setting.CredentialProvider = auth.SimpleCredentialProvider{
+			AppID:    setting.AppID,
+			Password: setting.AppPassword,
+		}
+		clientConfig, err := client.NewClientConfig(setting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+		connectorClient, err := client.NewClient(clientConfig)
+		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+		adapter := core.BotFrameworkAdapter{setting, &core.MockTokenValidator{}, connectorClient}
+		act, err := adapter.ParseRequest(ctx, req)
+		act.Label = "TestLabel"
+		err = adapter.UpdateActivity(ctx, act)
 		assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
 	})
 	rr := httptest.NewRecorder()
