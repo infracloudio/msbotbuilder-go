@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -40,6 +41,7 @@ import (
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
 	Delete(url url.URL, activity schema.Activity) error
+	Get(url url.URL) ([]byte, error)
 }
 
 // ConnectorClient implements Client to send HTTP requests to the connector service.
@@ -56,6 +58,37 @@ func NewClient(config *Config) (Client, error) {
 	}
 
 	return &ConnectorClient{*config, cache.AuthCache{}}, nil
+}
+
+// Get fetches data from given URL.
+func (client *ConnectorClient) Get(target url.URL) ([]byte, error) {
+
+	token, err := client.getToken()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", target.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	httpClient := &http.Client{}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 // Post an activity to given URL.

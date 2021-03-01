@@ -34,6 +34,7 @@ import (
 // Adapter is the primary interface for the user program to perform operations with
 // the connector service.
 type Adapter interface {
+	GetSenderInfo(ctx context.Context, req schema.Activity) (*schema.ConversationMember, error)
 	ParseRequest(ctx context.Context, req *http.Request) (schema.Activity, error)
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 	ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error
@@ -82,6 +83,22 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 	}
 
 	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator(), connectorClient}, nil
+}
+
+// GetSenderInfo returns information about message sender.
+func (bf *BotFrameworkAdapter) GetSenderInfo(ctx context.Context, req schema.Activity) (*schema.ConversationMember, error) {
+	response, err := activity.NewActivityResponse(bf.Client)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to create response object.")
+	}
+
+	resp, err := response.GetSenderInfo(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to get data.")
+	}
+
+	return resp, nil
+
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and

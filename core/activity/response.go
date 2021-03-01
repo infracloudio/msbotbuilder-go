@@ -33,6 +33,7 @@ import (
 type Response interface {
 	SendActivity(activity schema.Activity) error
 	DeleteActivity(activity schema.Activity) error
+	GetSenderInfo(activity schema.Activity) (*schema.ConversationMember, error)
 }
 
 const (
