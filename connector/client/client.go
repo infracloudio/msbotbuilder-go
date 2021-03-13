@@ -40,6 +40,7 @@ import (
 type Client interface {
 	Post(url url.URL, activity schema.Activity) error
 	Delete(url url.URL, activity schema.Activity) error
+	Put(url url.URL, activity schema.Activity) error
 }
 
 // ConnectorClient implements Client to send HTTP requests to the connector service.
@@ -67,7 +68,7 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) er
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(target.String())
 	req, err := http.NewRequest(http.MethodPost, target.String(), bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
@@ -81,6 +82,22 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) er
 // Returns any error as received from the call to connector service.
 func (client *ConnectorClient) Delete(target url.URL, activity schema.Activity) error {
 	req, err := http.NewRequest(http.MethodDelete, target.String(), nil)
+	if err != nil {
+		return err
+	}
+	return client.sendRequest(req, activity)
+}
+
+// Put an activity.
+//
+// Creates a HTTP PUT request with the provided activity payload and a Bearer token in the header.
+// Returns any error as received from the call to connector service.
+func (client *ConnectorClient) Put(target url.URL, activity schema.Activity) error {
+	jsonStr, err := json.Marshal(activity)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPut, target.String(), bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
 	}
@@ -109,7 +126,6 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 		}
 	}
 	defer resp.Body.Close()
-
 	// Check if resp allowed
 	for _, code := range allowedResp {
 		if code == resp.StatusCode {

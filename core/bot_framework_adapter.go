@@ -38,6 +38,7 @@ type Adapter interface {
 	ProcessActivity(ctx context.Context, req schema.Activity, handler activity.Handler) error
 	ProactiveMessage(ctx context.Context, ref schema.ConversationReference, handler activity.Handler) error
 	DeleteActivity(ctx context.Context, activityID string, ref schema.ConversationReference) error
+	UpdateActivity(ctx context.Context, activity schema.Activity) error
 }
 
 // AdapterSetting is the configuration for the Adapter.
@@ -154,4 +155,14 @@ func (bf *BotFrameworkAdapter) authenticateRequest(ctx context.Context, req sche
 	_, err := bf.TokenValidator.AuthenticateRequest(ctx, req, headers, bf.CredentialProvider, bf.ChannelService)
 
 	return errors.Wrap(err, "Authentication failed.")
+}
+
+// UpdateActivity Updates an existing activity
+func (bf *BotFrameworkAdapter) UpdateActivity(ctx context.Context, req schema.Activity) error {
+	response, err := activity.NewActivityResponse(bf.Client)
+
+	if err != nil {
+		return errors.Wrap(err, "Failed to create response object.")
+	}
+	return response.UpdateActivity(req)
 }

@@ -33,6 +33,7 @@ import (
 type Response interface {
 	SendActivity(activity schema.Activity) error
 	DeleteActivity(activity schema.Activity) error
+	UpdateActivity(activity schema.Activity) error
 }
 
 const (
@@ -40,8 +41,7 @@ const (
 	APIVersion = "v3"
 
 	sendToConversationURL = "/%s/conversations/%s/activities"
-	replyToActivityURL    = "/%s/conversations/%s/activities/%s"
-	deleteActivityURL     = "/%s/conversations/%s/activities/%s"
+	activityResourceURL   = "/%s/conversations/%s/activities/%s"
 )
 
 // DefaultResponse is the default implementation of Response.
@@ -56,7 +56,7 @@ func (response *DefaultResponse) DeleteActivity(activity schema.Activity) error 
 		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
 	}
 
-	respPath := fmt.Sprintf(deleteActivityURL, APIVersion, activity.Conversation.ID, activity.ID)
+	respPath := fmt.Sprintf(activityResourceURL, APIVersion, activity.Conversation.ID, activity.ID)
 
 	// Send activity to client
 	u.Path = path.Join(u.Path, respPath)
@@ -75,13 +75,28 @@ func (response *DefaultResponse) SendActivity(activity schema.Activity) error {
 
 	// if ReplyToID is set in the activity, we send reply to that particular activity
 	if activity.ReplyToID != "" {
-		respPath = fmt.Sprintf(replyToActivityURL, APIVersion, activity.Conversation.ID, activity.ID)
+		respPath = fmt.Sprintf(activityResourceURL, APIVersion, activity.Conversation.ID, activity.ID)
 	}
 
 	// Send activity to client
 	u.Path = path.Join(u.Path, respPath)
 	err = response.Client.Post(*u, activity)
 	return errors.Wrap(err, "Failed to send response.")
+}
+
+// UpdateActivity sends a Put activity method to the BOT connector service.
+func (response *DefaultResponse) UpdateActivity(activity schema.Activity) error {
+	u, err := url.Parse(activity.ServiceURL)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to parse ServiceURL %s.", activity.ServiceURL)
+	}
+
+	respPath := fmt.Sprintf(activityResourceURL, APIVersion, activity.Conversation.ID, activity.ID)
+
+	// Send activity to client
+	u.Path = path.Join(u.Path, respPath)
+	err = response.Client.Put(*u, activity)
+	return errors.Wrap(err, "Failed to update response.")
 }
 
 // NewActivityResponse provides a DefaultResponse implementaton of Response.
