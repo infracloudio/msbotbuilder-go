@@ -44,8 +44,8 @@ You can either test BOT on BotFramework portal or you can create app manifest an
 
 The program starts by creating a handler struct of type `activity.HandlerFuncs`.
 
-This struct contains definition for the `OnMessageFunc` field which is a treated as a callback by the library on the respective event.
-In this sample when GetCard command is issued from chat application adaptive card with input box is sent from this bot. Once submit button on card is clicked the card is deleted. Also bot updates the activity and set text message to activity as "Changed Activity" after card is deleted.
+This struct contains a definition for the `OnMessageFunc` field which is treated as a callback by the library on the respective event.
+In this sample, when the GetCard command is issued from the chat application, an adaptive card with an input box is sent from this bot. Once submit button on the card is clicked the card is deleted. Also, the bot updates the activity and sets the text message to activity as "Changed Activity" after the card is deleted.
 
 ```bash
 var customHandler = activity.HandlerFuncs{
