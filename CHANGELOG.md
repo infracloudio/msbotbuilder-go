@@ -1,5 +1,23 @@
 # Changelog
 
+## [v0.2.3](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.3) (2021-04-18)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.2...v0.2.3)
+
+**Fixed bugs:**
+
+- Echobot sample returns an error [\#38](https://github.com/infracloudio/msbotbuilder-go/issues/38)
+
+**Closed issues:**
+
+- Failed to parse request. Authentication failed.: Unauthorized. Invalid AppId passed on token [\#54](https://github.com/infracloudio/msbotbuilder-go/issues/54)
+- Add support to Update an activity [\#35](https://github.com/infracloudio/msbotbuilder-go/issues/35)
+
+**Merged pull requests:**
+
+- Added support for activity update [\#51](https://github.com/infracloudio/msbotbuilder-go/pull/51) ([sbawaskar](https://github.com/sbawaskar))
+- Added test case with mock server [\#49](https://github.com/infracloudio/msbotbuilder-go/pull/49) ([sbawaskar](https://github.com/sbawaskar))
+
 ## [v0.2.2](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.2) (2020-09-16)
 
 [Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.1...v0.2.2)
@@ -11,8 +29,7 @@
 
 **Merged pull requests:**
 
-- Added test case with mock server [\#49](https://github.com/infracloudio/msbotbuilder-go/pull/49) ([coupa-sbawaskar](https://github.com/coupa-sbawaskar))
-- Fixed conversation update activity handler failing with infinite loop \#47 [\#48](https://github.com/infracloudio/msbotbuilder-go/pull/48) ([coupa-sbawaskar](https://github.com/coupa-sbawaskar))
+- Fixed conversation update activity handler failing with infinite loop \#47 [\#48](https://github.com/infracloudio/msbotbuilder-go/pull/48) ([sbawaskar](https://github.com/sbawaskar))
 
 ## [v0.2.1](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.1) (2020-07-26)
 
@@ -28,7 +45,6 @@
 
 - Use github\_changelog\_generator 1.15.2 for release [\#45](https://github.com/infracloudio/msbotbuilder-go/pull/45) ([PrasadG193](https://github.com/PrasadG193))
 - Added conversation update activity handler [\#42](https://github.com/infracloudio/msbotbuilder-go/pull/42) ([PrasadG193](https://github.com/PrasadG193))
-- Add support to Delete Activity by ID [\#37](https://github.com/infracloudio/msbotbuilder-go/pull/37) ([PrasadG193](https://github.com/PrasadG193))
 
 ## [v0.2.0](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.0) (2020-03-15)
 
