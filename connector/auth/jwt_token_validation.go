@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -35,7 +36,24 @@ import (
 
 var metadataURL = "https://login.botframework.com/v1/.well-known/openidconfiguration"
 
-// TokenValidator  provides functionanlity to authenticate a request from the connector service.
+// Timeout for calls fetching the metadata and JWK URLs
+const fetchTimeout = 20
+
+// Regular expression to validate the auth header
+// The "Bearer " prefix is made optional here
+var authHeaderMatch = regexp.MustCompile("^(?:Bearer )?([A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*)$")
+
+var httpClient *http.Client
+
+// Init function for the package
+func init() {
+	// Create a HTTP client with a timeout
+	httpClient = &http.Client{
+		Timeout: fetchTimeout * time.Second,
+	}
+}
+
+// TokenValidator provides functionality to authenticate a request from the connector service.
 type TokenValidator interface {
 	AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error)
 }
@@ -50,18 +68,20 @@ func NewJwtTokenValidator() TokenValidator {
 	return &JwtTokenValidator{cache.AuthCache{}}
 }
 
-// AuthenticateRequest autheticates received request from connector service.
+// AuthenticateRequest authenticates the received request from connector service.
 //
 // The Bearer token is validated for the correct issuer, audience, serviceURL expiry and the signature is verified using the public JWK fetched from BotFramework API.
 func (jv *JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity schema.Activity, authHeader string, credentials CredentialProvider, channelService string) (ClaimsIdentity, error) {
-	if authHeader == "" {
+	// Check the format of the auth header
+	match := authHeaderMatch.FindStringSubmatch(strings.TrimSpace(authHeader))
+	if len(match) < 2 {
 		if credentials.IsAuthenticationDisabled() {
 			return nil, nil
 		}
 		return nil, errors.New("Unauthorized Access. Request is not authorized")
 	}
 
-	identity, err := jv.getIdentity(authHeader)
+	identity, err := jv.getIdentity(match[1])
 	if err != nil || !identity.IsAuthenticated() {
 		return nil, err
 	}
@@ -80,7 +100,7 @@ func (jv *JwtTokenValidator) AuthenticateRequest(ctx context.Context, activity s
 	return identity, nil
 }
 
-func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, error) {
+func (jv *JwtTokenValidator) getIdentity(jwtString string) (ClaimsIdentity, error) {
 
 	getKey := func(token *jwt.Token) (interface{}, error) {
 
@@ -91,14 +111,16 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 
 		// Get new JWKs if the cache is expired
 		if jv.AuthCache.IsExpired() {
-			set, err := jwk.FetchHTTP(jwksURL)
+			ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout*time.Second)
+			defer cancel()
+			set, err := jwk.Fetch(ctx, jwksURL)
 			if err != nil {
 				return nil, err
 			}
 			// Update the cache
 			// The expiry time is set to be of 5 days
 			jv.AuthCache = cache.AuthCache{
-				Keys:   *set,
+				Keys:   set,
 				Expiry: time.Now().Add(time.Hour * 24 * 5),
 			}
 		}
@@ -107,15 +129,21 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 			return nil, errors.New("Expecting JWT header to have string kid")
 		}
 		// Return cached JWKs
-		if key := jv.AuthCache.Keys.(jwk.Set).LookupKeyID(keyID); len(key) == 1 {
-			return key[0].Materialize()
+		key, ok := jv.AuthCache.Keys.(jwk.Set).LookupKeyID(keyID)
+		if ok {
+			var rawKey interface{}
+			err := key.Raw(&rawKey)
+			if err != nil {
+				return nil, err
+			}
+			return rawKey, nil
 		}
 
 		return nil, errors.New("Could not find public key")
 	}
 
 	// TODO: Add options verify_aud and verify_exp
-	token, err := jwt.Parse(strings.Split(authHeader, " ")[1], getKey)
+	token, err := jwt.Parse(jwtString, getKey)
 	if err != nil {
 		return nil, err
 	}
@@ -142,12 +170,12 @@ func (jv *JwtTokenValidator) getIdentity(authHeader string) (ClaimsIdentity, err
 func (jv *JwtTokenValidator) validateIdentity(identity ClaimsIdentity, credentials CredentialProvider) error {
 	// check issuer
 	if identity.GetClaimValue(IssuerClaim) != ToBotFromChannelTokenIssuer {
-		return errors.New("Unautorized, invlid token issuer")
+		return errors.New("Unauthorized: invalid token issuer")
 	}
 
 	// check App ID
 	if !credentials.IsValidAppID(identity.GetClaimValue(AudienceClaim)) {
-		return errors.New("Unauthorized. Invalid AppId passed on token")
+		return errors.New("Unauthorized: invalid AppId passed on token")
 	}
 
 	return nil
@@ -158,7 +186,7 @@ type metadata struct {
 }
 
 func (jv JwtTokenValidator) getJwkURL(metadataURL string) (string, error) {
-	response, err := http.Get(metadataURL)
+	response, err := httpClient.Get(metadataURL)
 	if err != nil {
 		return "", errors.New("Error getting metadata document")
 	}
