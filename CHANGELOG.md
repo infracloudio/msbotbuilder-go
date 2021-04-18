@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.2.4](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.4) (2021-04-18)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.3...v0.2.4)
+
+**Merged pull requests:**
+
+- Remove redundant print statement [\#60](https://github.com/infracloudio/msbotbuilder-go/pull/60) ([PrasadG193](https://github.com/PrasadG193))
+
 ## [v0.2.3](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.3) (2021-04-18)
 
 [Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.2...v0.2.3)
@@ -16,7 +24,6 @@
 **Merged pull requests:**
 
 - Added support for activity update [\#51](https://github.com/infracloudio/msbotbuilder-go/pull/51) ([sbawaskar](https://github.com/sbawaskar))
-- Added test case with mock server [\#49](https://github.com/infracloudio/msbotbuilder-go/pull/49) ([sbawaskar](https://github.com/sbawaskar))
 
 ## [v0.2.2](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.2) (2020-09-16)
 
@@ -29,6 +36,7 @@
 
 **Merged pull requests:**
 
+- Added test case with mock server [\#49](https://github.com/infracloudio/msbotbuilder-go/pull/49) ([sbawaskar](https://github.com/sbawaskar))
 - Fixed conversation update activity handler failing with infinite loop \#47 [\#48](https://github.com/infracloudio/msbotbuilder-go/pull/48) ([sbawaskar](https://github.com/sbawaskar))
 
 ## [v0.2.1](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.1) (2020-07-26)
@@ -45,6 +53,7 @@
 
 - Use github\_changelog\_generator 1.15.2 for release [\#45](https://github.com/infracloudio/msbotbuilder-go/pull/45) ([PrasadG193](https://github.com/PrasadG193))
 - Added conversation update activity handler [\#42](https://github.com/infracloudio/msbotbuilder-go/pull/42) ([PrasadG193](https://github.com/PrasadG193))
+- Add support to Delete Activity by ID [\#37](https://github.com/infracloudio/msbotbuilder-go/pull/37) ([PrasadG193](https://github.com/PrasadG193))
 
 ## [v0.2.0](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.0) (2020-03-15)
 
