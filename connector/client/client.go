@@ -68,7 +68,6 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) er
 	if err != nil {
 		return err
 	}
-	fmt.Println(target.String())
 	req, err := http.NewRequest(http.MethodPost, target.String(), bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
