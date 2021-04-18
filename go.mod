@@ -1,6 +1,6 @@
 module github.com/infracloudio/msbotbuilder-go
 
-go 1.13
+go 1.16
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

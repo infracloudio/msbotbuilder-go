@@ -20,7 +20,7 @@
 language: go
 
 go:
-  - '1.13'
+  - '1.16'
 
 install:
   - go get -u golang.org/x/lint/golint
