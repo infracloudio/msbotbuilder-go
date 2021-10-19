@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.2.5](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.5) (2021-10-19)
+
+[Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.4...v0.2.5)
+
+**Closed issues:**
+
+- Breaking change in latest github.com/lestrrat-go/jwx [\#41](https://github.com/infracloudio/msbotbuilder-go/issues/41)
+
+**Merged pull requests:**
+
+- Migrate dgrijalva/jwt dep to golang-jwt/jwt/v4 [\#62](https://github.com/infracloudio/msbotbuilder-go/pull/62) ([PrasadG193](https://github.com/PrasadG193))
+- Create codeql-analysis.yml [\#61](https://github.com/infracloudio/msbotbuilder-go/pull/61) ([PrasadG193](https://github.com/PrasadG193))
+
 ## [v0.2.4](https://github.com/infracloudio/msbotbuilder-go/tree/v0.2.4) (2021-04-18)
 
 [Full Changelog](https://github.com/infracloudio/msbotbuilder-go/compare/v0.2.3...v0.2.4)
