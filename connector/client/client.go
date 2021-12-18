@@ -47,6 +47,8 @@ type Client interface {
 type ConnectorClient struct {
 	Config
 	cache.AuthCache
+	AuthClient  *http.Client
+	ReplyClient *http.Client
 }
 
 // NewClient constructs and returns a new ConnectorClient with provided configuration and an empty cache.
@@ -56,7 +58,7 @@ func NewClient(config *Config) (Client, error) {
 		return nil, errors.New("Invalid client configuration")
 	}
 
-	return &ConnectorClient{*config, cache.AuthCache{}}, nil
+	return &ConnectorClient{*config, cache.AuthCache{}, &http.Client{}, &http.Client{}}, nil
 }
 
 // Post an activity to given URL.
@@ -112,9 +114,7 @@ func (client *ConnectorClient) sendRequest(req *http.Request, activity schema.Ac
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	replyClient := &http.Client{}
-
-	return client.checkRespError(replyClient.Do(req))
+	return client.checkRespError(client.ReplyClient.Do(req))
 }
 
 func (client *ConnectorClient) checkRespError(resp *http.Response, err error) error {
@@ -157,7 +157,6 @@ func (client *ConnectorClient) getToken() (string, error) {
 		return "", err
 	}
 
-	authClient := &http.Client{}
 	r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", err
@@ -166,7 +165,7 @@ func (client *ConnectorClient) getToken() (string, error) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-	resp, err := authClient.Do(r)
+	resp, err := client.AuthClient.Do(r)
 	if err != nil {
 		return "", customerror.HTTPError{
 			StatusCode: resp.StatusCode,
