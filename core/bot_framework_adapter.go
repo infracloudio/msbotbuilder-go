@@ -50,6 +50,8 @@ type AdapterSetting struct {
 	OpenIDMetadata     string
 	ChannelService     string
 	CredentialProvider auth.CredentialProvider
+	AuthClient         *http.Client
+	ReplyClient        *http.Client
 }
 
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
@@ -75,6 +77,14 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 	clientConfig, err := client.NewClientConfig(settings.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
 	if err != nil {
 		return nil, err
+	}
+
+	if settings.AuthClient != nil {
+		clientConfig.AuthClient = settings.AuthClient
+	}
+
+	if settings.ReplyClient != nil {
+		clientConfig.ReplyClient = settings.ReplyClient
 	}
 
 	connectorClient, err := client.NewClient(clientConfig)
