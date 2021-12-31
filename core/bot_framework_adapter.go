@@ -112,7 +112,7 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 		return errors.Wrap(err, "Failed to create response object.")
 	}
 
-	return response.SendActivity(replyActivity)
+	return response.SendActivity(ctx, replyActivity)
 }
 
 // ProactiveMessage sends activity to a conversation.
@@ -134,7 +134,7 @@ func (bf *BotFrameworkAdapter) DeleteActivity(ctx context.Context, activityID st
 		return errors.Wrap(err, "Failed to create response object.")
 	}
 
-	return response.DeleteActivity(req)
+	return response.DeleteActivity(ctx, req)
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:
@@ -174,5 +174,5 @@ func (bf *BotFrameworkAdapter) UpdateActivity(ctx context.Context, req schema.Ac
 	if err != nil {
 		return errors.Wrap(err, "Failed to create response object.")
 	}
-	return response.UpdateActivity(req)
+	return response.UpdateActivity(ctx, req)
 }

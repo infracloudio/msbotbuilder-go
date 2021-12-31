@@ -21,6 +21,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -38,9 +39,9 @@ import (
 
 // Client provides interface to send requests to the connector service.
 type Client interface {
-	Post(url url.URL, activity schema.Activity) error
-	Delete(url url.URL, activity schema.Activity) error
-	Put(url url.URL, activity schema.Activity) error
+	Post(ctx context.Context, url url.URL, activity schema.Activity) error
+	Delete(ctx context.Context, url url.URL, activity schema.Activity) error
+	Put(ctx context.Context, url url.URL, activity schema.Activity) error
 }
 
 // ConnectorClient implements Client to send HTTP requests to the connector service.
@@ -71,12 +72,12 @@ func NewClient(config *Config) (Client, error) {
 //
 // Creates a HTTP POST request with the provided activity as the body and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) error {
+func (client *ConnectorClient) Post(ctx context.Context, target url.URL, activity schema.Activity) error {
 	jsonStr, err := json.Marshal(activity)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPost, target.String(), bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, target.String(), bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
 	}
@@ -87,8 +88,8 @@ func (client *ConnectorClient) Post(target url.URL, activity schema.Activity) er
 //
 // Creates a HTTP DELETE request with the provided activity ID and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client *ConnectorClient) Delete(target url.URL, activity schema.Activity) error {
-	req, err := http.NewRequest(http.MethodDelete, target.String(), nil)
+func (client *ConnectorClient) Delete(ctx context.Context, target url.URL, activity schema.Activity) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, target.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -99,12 +100,12 @@ func (client *ConnectorClient) Delete(target url.URL, activity schema.Activity) 
 //
 // Creates a HTTP PUT request with the provided activity payload and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client *ConnectorClient) Put(target url.URL, activity schema.Activity) error {
+func (client *ConnectorClient) Put(ctx context.Context, target url.URL, activity schema.Activity) error {
 	jsonStr, err := json.Marshal(activity)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPut, target.String(), bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, target.String(), bytes.NewBuffer(jsonStr))
 	if err != nil {
 		return err
 	}
