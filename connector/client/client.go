@@ -113,7 +113,7 @@ func (client *ConnectorClient) Put(ctx context.Context, target url.URL, activity
 }
 
 func (client *ConnectorClient) sendRequest(req *http.Request, activity schema.Activity) error {
-	token, err := client.getToken()
+	token, err := client.getToken(req.Context())
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 	}
 }
 
-func (client *ConnectorClient) getToken() (string, error) {
+func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 
 	// Return cached JWT
 	if !client.AuthCache.IsExpired() {
@@ -164,7 +164,7 @@ func (client *ConnectorClient) getToken() (string, error) {
 		return "", err
 	}
 
-	r, err := http.NewRequest("POST", u.String(), strings.NewReader(data.Encode()))
+	r, err := http.NewRequestWithContext(ctx, "POST", u.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", err
 	}
