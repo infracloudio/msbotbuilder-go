@@ -47,8 +47,6 @@ type Client interface {
 type ConnectorClient struct {
 	Config
 	cache.AuthCache
-	AuthClient  *http.Client
-	ReplyClient *http.Client
 }
 
 // NewClient constructs and returns a new ConnectorClient with provided configuration and an empty cache.
@@ -58,7 +56,15 @@ func NewClient(config *Config) (Client, error) {
 		return nil, errors.New("Invalid client configuration")
 	}
 
-	return &ConnectorClient{*config, cache.AuthCache{}, &http.Client{}, &http.Client{}}, nil
+	if config.AuthClient == nil {
+		config.AuthClient = &http.Client{}
+	}
+
+	if config.ReplyClient == nil {
+		config.ReplyClient = &http.Client{}
+	}
+
+	return &ConnectorClient{*config, cache.AuthCache{}}, nil
 }
 
 // Post an activity to given URL.
