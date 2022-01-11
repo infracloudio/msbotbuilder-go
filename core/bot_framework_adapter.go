@@ -50,6 +50,8 @@ type AdapterSetting struct {
 	OpenIDMetadata     string
 	ChannelService     string
 	CredentialProvider auth.CredentialProvider
+	AuthClient         *http.Client
+	ReplyClient        *http.Client
 }
 
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
@@ -77,6 +79,14 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 		return nil, err
 	}
 
+	if settings.AuthClient != nil {
+		clientConfig.AuthClient = settings.AuthClient
+	}
+
+	if settings.ReplyClient != nil {
+		clientConfig.ReplyClient = settings.ReplyClient
+	}
+
 	connectorClient, err := client.NewClient(clientConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to create Connector Client.")
@@ -102,7 +112,7 @@ func (bf *BotFrameworkAdapter) ProcessActivity(ctx context.Context, req schema.A
 		return errors.Wrap(err, "Failed to create response object.")
 	}
 
-	return response.SendActivity(replyActivity)
+	return response.SendActivity(ctx, replyActivity)
 }
 
 // ProactiveMessage sends activity to a conversation.
@@ -124,7 +134,7 @@ func (bf *BotFrameworkAdapter) DeleteActivity(ctx context.Context, activityID st
 		return errors.Wrap(err, "Failed to create response object.")
 	}
 
-	return response.DeleteActivity(req)
+	return response.DeleteActivity(ctx, req)
 }
 
 // ParseRequest parses the received activity in a HTTP reuqest to:
@@ -164,5 +174,5 @@ func (bf *BotFrameworkAdapter) UpdateActivity(ctx context.Context, req schema.Ac
 	if err != nil {
 		return errors.Wrap(err, "Failed to create response object.")
 	}
-	return response.UpdateActivity(req)
+	return response.UpdateActivity(ctx, req)
 }
