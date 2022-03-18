@@ -52,6 +52,7 @@ type AdapterSetting struct {
 	CredentialProvider auth.CredentialProvider
 	AuthClient         *http.Client
 	ReplyClient        *http.Client
+	JWTConfig          *auth.JWTOptions
 }
 
 // BotFrameworkAdapter implements Adapter and is currently the only implementation returned to the user program.
@@ -87,12 +88,18 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 		clientConfig.ReplyClient = settings.ReplyClient
 	}
 
+	var tokenValidator auth.TokenValidator
+	if settings.JWTConfig != nil {
+		tokenValidator = auth.NewJwtTokenValidatorWithOptions(settings.JWTConfig)
+	} else {
+		tokenValidator = auth.NewJwtTokenValidator()
+	}
 	connectorClient, err := client.NewClient(clientConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to create Connector Client.")
 	}
 
-	return &BotFrameworkAdapter{settings, auth.NewJwtTokenValidator(), connectorClient}, nil
+	return &BotFrameworkAdapter{settings, tokenValidator, connectorClient}, nil
 }
 
 // ProcessActivity receives an activity, processes it as specified in by the 'handler' and
