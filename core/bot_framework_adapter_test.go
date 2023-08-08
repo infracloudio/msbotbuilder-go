@@ -177,3 +177,103 @@ func TestActivityUpdate(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 	assert.Equal(t, rr.Code, 200, "Expect 200 response status")
 }
+
+func TestActivityCustom(t *testing.T) {
+	srv := serverMock(t)
+
+	type args struct {
+		Activity schema.Activity
+		Handler  activity.Handler
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			args: args{
+				Activity: schema.Activity{
+					Type: schema.InstallationUpdate,
+					Conversation: schema.ConversationAccount{
+						ID:   "abcd1234",
+						Name: "Convo1",
+					},
+					MembersAdded: []schema.ChannelAccount{
+						{
+							ID:   "123456",
+							Name: "Some member name",
+							Role: schema.BOT,
+						},
+					},
+					Text:       "Message from Teams Client",
+					ReplyToID:  "5d5cdc723",
+					ServiceURL: srv.URL,
+				},
+				Handler: activity.HandlerFuncsMap{
+					Funcs: map[schema.ActivityTypes]func(turn *activity.TurnContext) (schema.Activity, error){
+						schema.InstallationUpdate: func(turn *activity.TurnContext) (schema.Activity, error) {
+							return turn.SendActivity(activity.MsgOptionText("supported"))
+						},
+					},
+				},
+			},
+		},
+		{
+			args: args{
+				Activity: schema.Activity{
+					Type: schema.InstallationUpdate,
+					Conversation: schema.ConversationAccount{
+						ID:   "abcd1234",
+						Name: "Convo1",
+					},
+					MembersAdded: []schema.ChannelAccount{
+						{
+							ID:   "123456",
+							Name: "Some member name",
+							Role: schema.BOT,
+						},
+					},
+					Text:       "Message from Teams Client",
+					ReplyToID:  "5d5cdc723",
+					ServiceURL: srv.URL,
+				},
+				Handler: activity.HandlerFuncs{},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				ctx := context.Background()
+				setting := core.AdapterSetting{
+					AppID:       "asdasd",
+					AppPassword: "cfg.MicrosoftTeams.AppPassword",
+				}
+				setting.CredentialProvider = auth.SimpleCredentialProvider{
+					AppID:    setting.AppID,
+					Password: setting.AppPassword,
+				}
+				clientConfig, err := client.NewClientConfig(setting.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+				assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+				connectorClient, err := client.NewClient(clientConfig)
+				assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+				adapter := core.BotFrameworkAdapter{setting, &core.MockTokenValidator{}, connectorClient}
+				act, err := adapter.ParseRequest(ctx, req)
+
+				err = adapter.ProcessActivity(ctx, act, tt.args.Handler)
+				assert.True(t, (err != nil) == tt.wantErr, fmt.Sprintf("Failed with error %s", err))
+			})
+			rr := httptest.NewRecorder()
+			bodyJSON, err := json.Marshal(tt.args.Activity)
+			assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+			bodyBytes := bytes.NewReader(bodyJSON)
+			req, err := http.NewRequest(http.MethodPost, "/api/messages", bodyBytes)
+			assert.Nil(t, err, fmt.Sprintf("Failed with error %s", err))
+			req.Header.Set("Authorization", "Bearer abc123")
+			handler.ServeHTTP(rr, req)
+			assert.Equal(t, rr.Code, 200, "Expect 200 response status")
+		})
+	}
+}
