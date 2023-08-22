@@ -33,12 +33,10 @@ type Handler interface {
 
 // HandlerFuncsMap is an adaptor to let client program handler functions
 // for all activity types, including not supported by HandlerFuncs adaptor
-type HandlerFuncsMap struct {
-	Funcs map[schema.ActivityTypes]func(turn *TurnContext) (schema.Activity, error)
-}
+type HandlerFuncsMap map[schema.ActivityTypes]func(turn *TurnContext) (schema.Activity, error)
 
 func (hf HandlerFuncsMap) On(context *TurnContext) (schema.Activity, error) {
-	if handler, ok := hf.Funcs[context.Activity.Type]; ok {
+	if handler, ok := hf[context.Activity.Type]; ok {
 		return handler(context)
 	}
 	return schema.Activity{}, fmt.Errorf("Activity type %s not supported", context.Activity.Type)

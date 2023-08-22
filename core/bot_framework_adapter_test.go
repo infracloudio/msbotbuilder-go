@@ -211,10 +211,8 @@ func TestActivityCustom(t *testing.T) {
 					ServiceURL: srv.URL,
 				},
 				Handler: activity.HandlerFuncsMap{
-					Funcs: map[schema.ActivityTypes]func(turn *activity.TurnContext) (schema.Activity, error){
-						schema.InstallationUpdate: func(turn *activity.TurnContext) (schema.Activity, error) {
-							return turn.SendActivity(activity.MsgOptionText("supported"))
-						},
+					schema.InstallationUpdate: func(turn *activity.TurnContext) (schema.Activity, error) {
+						return turn.SendActivity(activity.MsgOptionText("supported"))
 					},
 				},
 			},
