@@ -97,9 +97,7 @@ func (client *ConnectorClient) Get(ctx context.Context, target url.URL) (json.Ra
 
 	res, err := client.sendRequest(req)
 	if err != nil {
-		return nil, customerror.HTTPError{
-			HtErr: err,
-		}
+		return nil, newHTTPError(err)
 	}
 	defer res.Body.Close()
 
@@ -147,9 +145,7 @@ func (client *ConnectorClient) Put(ctx context.Context, target url.URL, activity
 func (client *ConnectorClient) sendRequestWithRespErrCheck(req *http.Request) error {
 	res, err := client.sendRequest(req)
 	if err != nil {
-		return customerror.HTTPError{
-			HtErr: err,
-		}
+		return newHTTPError(err)
 	}
 
 	defer res.Body.Close()
@@ -177,10 +173,7 @@ func (client *ConnectorClient) checkRespError(resp *http.Response) error {
 		}
 	}
 
-	return customerror.HTTPError{
-		HtErr:      errors.New("invalid response"),
-		StatusCode: resp.StatusCode,
-	}
+	return newHTTPErrorWithStatusCode(errors.New("invalid response"), resp.StatusCode)
 }
 
 func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
@@ -212,10 +205,7 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 
 	resp, err := client.AuthClient.Do(r)
 	if err != nil {
-		return "", customerror.HTTPError{
-			StatusCode: resp.StatusCode,
-			HtErr:      err,
-		}
+		return "", newHTTPErrorWithStatusCode(err, resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -233,4 +223,17 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 	}
 
 	return client.AuthCache.Keys.(string), nil
+}
+
+func newHTTPError(err error) error {
+	return customerror.HTTPError{
+		HtErr: err,
+	}
+}
+
+func newHTTPErrorWithStatusCode(err error, statusCode int) error {
+	return customerror.HTTPError{
+		HtErr:      err,
+		StatusCode: statusCode,
+	}
 }
