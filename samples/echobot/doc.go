@@ -10,7 +10,7 @@ your BotFramework app_id and password. Then, run:
 
 	go run main.go
 
-This will start a server which will listen on port 3978
+# This will start a server which will listen on port 3978
 
 # Understanding the example
 
