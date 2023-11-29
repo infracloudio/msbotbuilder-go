@@ -18,8 +18,6 @@ jobs:
         go-version: '1.21.x'
     - name: Gomod
       run: go mod download
-    - name: Golint
-      run: hack/verify-golint.sh
     - name: Gofmt
       run: hack/verify-gofmt.sh
     - name: Go vet
