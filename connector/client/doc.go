@@ -17,7 +17,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*Package client provides a HTTP client for calls to the connector service.
+/*
+Package client provides a HTTP client for calls to the connector service.
 
 The configuration needed for the call are defined by the struct Config
 */

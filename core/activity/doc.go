@@ -17,7 +17,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*Package activity acts as a handler for any received activity and the user defined operation
+/*
+Package activity acts as a handler for any received activity and the user defined operation
 on that activity. It then is responsible for sending a reply to the connector service.
 */
 package activity
