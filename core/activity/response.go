@@ -61,7 +61,7 @@ func (response *DefaultResponse) DeleteActivity(ctx context.Context, activity sc
 
 	// Send activity to client
 	u.Path = path.Join(u.Path, respPath)
-	err = response.Client.Delete(ctx, *u, activity)
+	err = response.Client.Delete(ctx, *u)
 	return errors.Wrap(err, "Failed to delete response.")
 }
 

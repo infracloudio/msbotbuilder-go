@@ -40,7 +40,8 @@ import (
 // Client provides interface to send requests to the connector service.
 type Client interface {
 	Post(ctx context.Context, url url.URL, activity schema.Activity) error
-	Delete(ctx context.Context, url url.URL, activity schema.Activity) error
+	Delete(ctx context.Context, url url.URL) error
+	Get(ctx context.Context, url url.URL) (json.RawMessage, error)
 	Put(ctx context.Context, url url.URL, activity schema.Activity) error
 }
 
@@ -81,19 +82,48 @@ func (client *ConnectorClient) Post(ctx context.Context, target url.URL, activit
 	if err != nil {
 		return err
 	}
-	return client.sendRequest(req, activity)
+	return client.sendRequestWithRespErrCheck(req)
+}
+
+// Get a resource from given URL using authenticated request.
+//
+// This method is helpful for obtaining Teams context for your bot.
+// Read more: https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/get-teams-context?tabs=json
+func (client *ConnectorClient) Get(ctx context.Context, target url.URL) (json.RawMessage, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := client.sendRequest(req)
+	if err != nil {
+		return nil, newHTTPError(err)
+	}
+	defer res.Body.Close()
+
+	if wrappedErr := client.checkRespError(res); wrappedErr != nil {
+		return nil, wrappedErr
+	}
+
+	var rawOutput json.RawMessage
+	err = json.NewDecoder(res.Body).Decode(&rawOutput)
+	if err != nil {
+		return nil, err
+	}
+
+	return rawOutput, nil
 }
 
 // Delete an activity.
 //
 // Creates a HTTP DELETE request with the provided activity ID and a Bearer token in the header.
 // Returns any error as received from the call to connector service.
-func (client *ConnectorClient) Delete(ctx context.Context, target url.URL, activity schema.Activity) error {
+func (client *ConnectorClient) Delete(ctx context.Context, target url.URL) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, target.String(), nil)
 	if err != nil {
 		return err
 	}
-	return client.sendRequest(req, activity)
+	return client.sendRequestWithRespErrCheck(req)
 }
 
 // Put an activity.
@@ -109,29 +139,33 @@ func (client *ConnectorClient) Put(ctx context.Context, target url.URL, activity
 	if err != nil {
 		return err
 	}
-	return client.sendRequest(req, activity)
+	return client.sendRequestWithRespErrCheck(req)
 }
 
-func (client *ConnectorClient) sendRequest(req *http.Request, activity schema.Activity) error {
+func (client *ConnectorClient) sendRequestWithRespErrCheck(req *http.Request) error {
+	res, err := client.sendRequest(req)
+	if err != nil {
+		return newHTTPError(err)
+	}
+
+	defer res.Body.Close()
+	return client.checkRespError(res)
+}
+
+func (client *ConnectorClient) sendRequest(req *http.Request) (*http.Response, error) {
 	token, err := client.getToken(req.Context())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	return client.checkRespError(client.ReplyClient.Do(req))
+	return client.ReplyClient.Do(req)
 }
 
-func (client *ConnectorClient) checkRespError(resp *http.Response, err error) error {
+func (client *ConnectorClient) checkRespError(resp *http.Response) error {
 	allowedResp := []int{http.StatusOK, http.StatusCreated, http.StatusAccepted}
-	if err != nil {
-		return customerror.HTTPError{
-			HtErr: err,
-		}
-	}
-	defer resp.Body.Close()
 	// Check if resp allowed
 	for _, code := range allowedResp {
 		if code == resp.StatusCode {
@@ -139,10 +173,7 @@ func (client *ConnectorClient) checkRespError(resp *http.Response, err error) er
 		}
 	}
 
-	return customerror.HTTPError{
-		HtErr:      errors.New("invalid response"),
-		StatusCode: resp.StatusCode,
-	}
+	return newHTTPErrorWithStatusCode(errors.New("invalid response"), resp.StatusCode)
 }
 
 func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
@@ -174,10 +205,7 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 
 	resp, err := client.AuthClient.Do(r)
 	if err != nil {
-		return "", customerror.HTTPError{
-			StatusCode: resp.StatusCode,
-			HtErr:      err,
-		}
+		return "", newHTTPErrorWithStatusCode(err, resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
@@ -195,4 +223,17 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 	}
 
 	return client.AuthCache.Keys.(string), nil
+}
+
+func newHTTPError(err error) error {
+	return customerror.HTTPError{
+		HtErr: err,
+	}
+}
+
+func newHTTPErrorWithStatusCode(err error, statusCode int) error {
+	return customerror.HTTPError{
+		HtErr:      err,
+		StatusCode: statusCode,
+	}
 }
