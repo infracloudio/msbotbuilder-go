@@ -61,11 +61,25 @@ type TokenValidator interface {
 // JwtTokenValidator is the default implementation of TokenValidator.
 type JwtTokenValidator struct {
 	cache.AuthCache
+	jwtoptions *JWTOptions
 }
 
 // NewJwtTokenValidator returns a new TokenValidator value with an empty cache
 func NewJwtTokenValidator() TokenValidator {
-	return &JwtTokenValidator{cache.AuthCache{}}
+	return &JwtTokenValidator{cache.AuthCache{}, &JWTOptions{}}
+}
+
+type JWTOptions struct {
+	// Leeway is used to extend the allowance window
+	// for the "nbf" and "exp" claims of the token,
+	// allowing clients to loosen restrictions on *when* a token becomes valid
+	// and when it's considered expired
+	Leeway time.Duration
+}
+
+// NewJwtTokenValidatorWithOptions returns a new TokenValidator value with JWT-options configured
+func NewJwtTokenValidatorWithOptions(options *JWTOptions) TokenValidator {
+	return &JwtTokenValidator{cache.AuthCache{}, options}
 }
 
 // AuthenticateRequest authenticates the received request from connector service.
@@ -143,7 +157,7 @@ func (jv *JwtTokenValidator) getIdentity(jwtString string) (ClaimsIdentity, erro
 	}
 
 	// TODO: Add options verify_aud and verify_exp
-	token, err := jwt.Parse(jwtString, getKey)
+	token, err := jwt.Parse(jwtString, getKey, jwt.WithLeeway(jv.jwtoptions.Leeway))
 	if err != nil {
 		return nil, err
 	}
