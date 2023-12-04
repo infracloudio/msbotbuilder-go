@@ -6,7 +6,7 @@ This Microsoft Teams bot uses the [msbotbuilder-go](https://github.com/infraclou
 
 #### Step 1: Register MS BOT
 
-Follow the official [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#register-your-web-service-with-the-bot-framework) to create and register your BOT.
+Follow the official [documentation](https://docs.microsoft.com/en-us/azure/bot-service/abs-quickstart) to create and register your BOT.
 
 Copy `APP_ID` and `APP_PASSWORD` generated for your BOT.
 
@@ -33,11 +33,11 @@ Now, in separate terminal, run [ngrok](https://ngrok.com/download) command to ex
 $ ngrok http 3978
 ```
 
-Copy `https` endpoint, go to [Bot Framework](https://dev.botframework.com/bots) dashboard and set messaging endpoint under Settings.
+Copy `https` endpoint, go to [Azure Portal](https://portal.azure.com) dashboard, select your bot under `Resources`, click `Configuration`, and paste the URL into `Messaging endpoint`. Append `/api/messages` to the URL, i.e. it should look like `https://b7fd-92-6-238-167.eu.ngrok.io/api/messages`.
 
 #### Step 4: Test the BOT
 
-You can either test BOT on BotFramework portal or you can create app manifest and install the App on Teams as mentioned [here](https://docs.microsoft.com/en-us/microsoftteams/platform/bots/how-to/create-a-bot-for-teams#create-your-app-manifest-and-package).
+Test the bot by going to [Azure Portal](https://portal.azure.com), select your bot under `Resources`, and click `Test in Web Chat` (under the `Settings` header). Note that you will need to update the `Messaging endpoint` URL in the bot configuration whenever you restart ngrok.
 
 
 ## Understanding the example
