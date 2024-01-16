@@ -28,9 +28,18 @@ import (
 
 // Handler acts as the interface for the client program to define actions on various events from connector service.
 type Handler interface {
-	OnMessage(context *TurnContext) (schema.Activity, error)
-	OnInvoke(context *TurnContext) (schema.Activity, error)
-	OnConversationUpdate(context *TurnContext) (schema.Activity, error)
+	On(context *TurnContext) (schema.Activity, error)
+}
+
+// HandlerFuncsMap is an adaptor to let client program handler functions
+// for all activity types, including not supported by HandlerFuncs adaptor
+type HandlerFuncsMap map[schema.ActivityTypes]func(turn *TurnContext) (schema.Activity, error)
+
+func (hf HandlerFuncsMap) On(context *TurnContext) (schema.Activity, error) {
+	if handler, ok := hf[context.Activity.Type]; ok {
+		return handler(context)
+	}
+	return schema.Activity{}, fmt.Errorf("Activity type %s not supported", context.Activity.Type)
 }
 
 // HandlerFuncs is an adaptor to let client program specify as many or
@@ -40,6 +49,18 @@ type HandlerFuncs struct {
 	OnMessageFunc            func(turn *TurnContext) (schema.Activity, error)
 	OnInvokeFunc             func(turn *TurnContext) (schema.Activity, error)
 	OnConversationUpdateFunc func(turn *TurnContext) (schema.Activity, error)
+}
+
+func (r HandlerFuncs) On(context *TurnContext) (schema.Activity, error) {
+	switch context.Activity.Type {
+	case schema.Message:
+		return r.OnMessage(context)
+	case schema.Invoke:
+		return r.OnInvoke(context)
+	case schema.ConversationUpdate:
+		return r.OnConversationUpdate(context)
+	}
+	return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
 }
 
 // OnMessage handles a 'message' event from connector service.
@@ -69,13 +90,5 @@ func (r HandlerFuncs) OnInvoke(turn *TurnContext) (schema.Activity, error) {
 // PrepareActivityContext routes the received Activity to respective handler function.
 // Returns the result of the handler function.
 func PrepareActivityContext(handler Handler, context *TurnContext) (schema.Activity, error) {
-	switch context.Activity.Type {
-	case schema.Message:
-		return handler.OnMessage(context)
-	case schema.Invoke:
-		return handler.OnInvoke(context)
-	case schema.ConversationUpdate:
-		return handler.OnConversationUpdate(context)
-	}
-	return schema.Activity{}, fmt.Errorf("Activity type %s not supported yet", context.Activity.Type)
+	return handler.On(context)
 }
