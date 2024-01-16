@@ -17,7 +17,8 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*Package auth provides authentication properties and functionalities for the connector service.
+/*
+Package auth provides authentication properties and functionalities for the connector service.
 
 TokenValidator provides the functionality for authenticating a JWT token in a received request.
 Others provide the basic structures needed.

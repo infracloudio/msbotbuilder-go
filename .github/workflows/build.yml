@@ -1,0 +1,26 @@
+name: Build
+
+on:
+  push:
+    branches:  [ develop, master ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.x'
+    - name: Gomod
+      run: go mod download
+    - name: Gofmt
+      run: hack/verify-gofmt.sh
+    - name: Go vet
+      run: hack/verify-govet.sh
+    - name: Test
+      run: go test -race -cover ./...
