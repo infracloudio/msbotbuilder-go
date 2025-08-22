@@ -21,9 +21,10 @@ package client
 
 import (
 	"errors"
-	"github.com/infracloudio/msbotbuilder-go/connector/auth"
 	"net/http"
 	"net/url"
+
+	"github.com/infracloudio/msbotbuilder-go/connector/auth"
 )
 
 // Config represents the credentials for a user program and the URL for validating the credentials.

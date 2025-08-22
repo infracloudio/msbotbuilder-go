@@ -73,8 +73,13 @@ func NewBotAdapter(settings AdapterSetting) (Adapter, error) {
 		settings.ChannelService = auth.ChannelService
 	}
 
+	var tokenURL string = auth.ToChannelFromBotLoginURL[0]
+	if settings.ChannelAuthTenant != "" {
+		tokenURL = auth.ToChannelFromBotLoginURLPrefix + settings.ChannelAuthTenant + auth.ToChannelFromBotTokenEndpointPathTOCHANNELFROMBOTTOKENENDPOINTPATH
+	}
+
 	// Prepare new config and Client
-	clientConfig, err := client.NewClientConfig(settings.CredentialProvider, auth.ToChannelFromBotLoginURL[0])
+	clientConfig, err := client.NewClientConfig(settings.CredentialProvider, tokenURL)
 	if err != nil {
 		return nil, err
 	}

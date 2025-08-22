@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -143,13 +144,23 @@ func (client *ConnectorClient) Put(ctx context.Context, target url.URL, activity
 }
 
 func (client *ConnectorClient) sendRequestWithRespErrCheck(req *http.Request) error {
-	res, err := client.sendRequest(req)
+	resp, err := client.sendRequest(req)
 	if err != nil {
 		return newHTTPError(err)
 	}
 
-	defer res.Body.Close()
-	return client.checkRespError(res)
+	if resp.StatusCode < 200 && resp.StatusCode > 299 { // propagate the actual error
+		body := io.NopCloser(resp.Body)
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return fmt.Errorf("request failed with status %d[%s], err: %s", resp.StatusCode, resp.Status, err.Error())
+		} else {
+			return fmt.Errorf("request failed with status %d[%s], err: %s", resp.StatusCode, resp.Status, string(raw))
+		}
+	}
+
+	defer resp.Body.Close()
+	return client.checkRespError(resp)
 }
 
 func (client *ConnectorClient) sendRequest(req *http.Request) (*http.Response, error) {
@@ -159,7 +170,7 @@ func (client *ConnectorClient) sendRequest(req *http.Request) (*http.Response, e
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", "Bearer "+*token)
 
 	return client.ReplyClient.Do(req)
 }
@@ -176,11 +187,12 @@ func (client *ConnectorClient) checkRespError(resp *http.Response) error {
 	return newHTTPErrorWithStatusCode(errors.New("invalid response"), resp.StatusCode)
 }
 
-func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
+func (client *ConnectorClient) getToken(ctx context.Context) (*string, error) {
 
 	// Return cached JWT
 	if !client.AuthCache.IsExpired() {
-		return client.AuthCache.Keys.(string), nil
+		result, _ := client.AuthCache.Keys.(string)
+		return &result, nil
 	}
 
 	// Get new JWT
@@ -192,12 +204,12 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 
 	u, err := url.ParseRequestURI(client.AuthURL.String())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	r, err := http.NewRequestWithContext(ctx, "POST", u.String(), strings.NewReader(data.Encode()))
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), strings.NewReader(data.Encode()))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -205,15 +217,25 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 
 	resp, err := client.AuthClient.Do(r)
 	if err != nil {
-		return "", newHTTPErrorWithStatusCode(err, resp.StatusCode)
+		return nil, newHTTPErrorWithStatusCode(err, resp.StatusCode)
 	}
 
 	defer resp.Body.Close()
 
-	a := &schema.AuthResponse{}
-	err = json.NewDecoder(resp.Body).Decode(a)
+	if resp.StatusCode < 200 && resp.StatusCode > 299 { // propagate the actual error
+		body := io.NopCloser(resp.Body)
+		raw, err := io.ReadAll(body)
+		if err != nil {
+			return nil, fmt.Errorf("request failed with status %d[%s], err: %s", resp.StatusCode, resp.Status, err.Error())
+		} else {
+			return nil, fmt.Errorf("request failed with status %d[%s], err: %s", resp.StatusCode, resp.Status, string(raw))
+		}
+	}
+
+	var a schema.AuthResponse
+	err = json.NewDecoder(resp.Body).Decode(&a)
 	if err != nil {
-		return "", fmt.Errorf("Invalid activity to send %s", err)
+		return nil, fmt.Errorf("invalid activity to send %s", err.Error())
 	}
 
 	// Update cache
@@ -221,8 +243,8 @@ func (client *ConnectorClient) getToken(ctx context.Context) (string, error) {
 		Keys:   a.AccessToken,
 		Expiry: time.Now().Add(time.Second * time.Duration(a.ExpireTime)),
 	}
-
-	return client.AuthCache.Keys.(string), nil
+	result, _ := client.AuthCache.Keys.(string)
+	return &result, nil
 }
 
 func newHTTPError(err error) error {
